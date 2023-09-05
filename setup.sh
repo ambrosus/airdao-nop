@@ -41,9 +41,8 @@ sudo chmod +x /usr/local/bin/docker-compose
 # Install yarn globally
 npm install -g yarn
 
-# todo remove branch simplify-nop
-git clone -b simplify-nop https://github.com/ambrosus/ambrosus-nop.git
-cd ambrosus-nop || return
+git clone https://github.com/ambrosus/airdao-nop.git
+cd airdao-nop || return
 
 ./update.sh
 
