@@ -32,6 +32,9 @@ const messages = {
   dockerStarting: "Starting docker containers... 🐳",
   dockerStarted: "🎉 Your node is launched! 🎉",
   dockerError: "Something went wrong. Please check the logs below.",
+  insufficientFunds:
+    "You have insufficient funds to perform transaction 💸\n Top up with small amount and retry",
+  genericError: (message) => `An error occurred: ${message}`,
   warningMessage: "⚠️ WARNING! ⚠️",
   dockerRestartRequired:
     "Changes in network have been detected. Please restart the docker containers with",
@@ -42,6 +45,14 @@ const messages = {
     `Please wait until your node is onboarded to the network, Left: ${days}d ${hours}h ${minutes}m`,
   notRegisteredNode: (explorerUrl) =>
     `Your node is not registered in the network. Register here: https://${explorerUrl}/explorer/node-setup/`,
+  actions: {
+    resetup: "🔄 Resetup node",
+    logs: "📁 Send logs to server",
+    check: "🔍 Check if NOP version is actual",
+    update: "🚀 Update nop version",
+    quit: "👋 Finish NOP",
+  },
+  selectActionQuestion: "You can now perform one of the following actions",
 };
 
 export default messages;

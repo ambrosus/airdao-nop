@@ -17,6 +17,7 @@ import { readState, writeState } from "./utils/state";
 import setup from "./setup";
 import runDockerPhase from "./phases/05_run_docker";
 import checkStatusInServerNodes from "./phases/06_check_status_in_server_nodes";
+import { selectActionPhase } from "./phases/07_select_action_phase";
 
 const start = async () => {
   Dialog.logoDialog();
@@ -39,6 +40,8 @@ const start = async () => {
   await runDockerPhase();
 
   await checkStatusInServerNodes(state.privateKey, state.network);
+
+  await selectActionPhase();
 };
 
 start().catch((err) => {

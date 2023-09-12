@@ -47,6 +47,10 @@ class Dialog {
     this.output(chalk.green(messages.dockerInstalledInfo));
   dockerMissingDialog = () =>
     this.output(chalk.red(messages.dockerMissingInfo));
+  insufficientFundsDialog = () =>
+    this.output(chalk.red(messages.insufficientFunds));
+  genericErrorDialog = (message) =>
+    this.output(chalk.red(messages.genericError(message)));
   networkSelectedDialog = (network) =>
     this.output(chalk.green(messages.networkSelected(chalk.yellow(network))));
   nodeIPDetectedDialog = (nodeUrl) =>
@@ -115,6 +119,16 @@ class Dialog {
           }
           return `0x${answer}`;
         },
+      },
+    ]);
+
+  selectActionDialog = async (availableActions) =>
+    inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: messages.selectActionQuestion,
+        choices: availableActions,
       },
     ]);
 
