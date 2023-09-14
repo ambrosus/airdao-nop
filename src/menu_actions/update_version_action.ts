@@ -13,7 +13,7 @@ async function runUpdate() {
     await exec("yarn");
     await exec("yarn build");
 
-    if (await util.promisify(fs.exists)("output/docker-compose.yml")) {
+    if (await util.promisify(fs.exists)("./output/docker-compose.yml")) {
       await exec("yarn start update");
       await exec("docker-compose -f output/docker-compose.yml pull");
       await exec("docker-compose -f output/docker-compose.yml down");
@@ -28,9 +28,10 @@ async function runUpdate() {
 async function updateVersionAction() {
   try {
     const scriptDirectory = path.dirname(path.resolve(__filename));
+    console.log("DIRECTORY", scriptDirectory);
 
-    if (fs.existsSync("/etc/cron.daily")) {
-      const cronDailyPath = "/etc/cron.daily/airdao-nop";
+    if (fs.existsSync("./etc/cron.daily")) {
+      const cronDailyPath = "./etc/cron.daily/airdao-nop";
       if (fs.existsSync(cronDailyPath)) {
         fs.unlinkSync(cronDailyPath);
       }
@@ -38,7 +39,7 @@ async function updateVersionAction() {
     }
 
     await writeFile(
-      "/etc/sysctl.d/10-airdao.conf",
+      "./etc/sysctl.d/10-airdao.conf",
       "net.ipv6.conf.all.disable_ipv6=1\n",
       "utf-8"
     );

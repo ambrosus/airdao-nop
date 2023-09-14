@@ -3,13 +3,16 @@ import { execSync } from "child_process";
 import inquirer from "inquirer";
 import Crypto from "../utils/crypto";
 
-function getPrivateKey(): string {
-  const filePath = "airdao-nop/state.json";
-  const key = "privateKey";
+function getPrivateKey() {
+  const filePath = "./state.json";
   try {
-    const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    return (data[key] || "").toLowerCase();
+    const fileContents = fs.readFileSync(filePath, "utf8");
+    const data = JSON.parse(fileContents);
+    const privateKey = data.privateKey || "";
+
+    return privateKey;
   } catch (error) {
+    console.error("Error reading or parsing private key:", error);
     return "";
   }
 }
@@ -19,7 +22,7 @@ function getAddress(privateKey: string): string {
 }
 
 function getNetworkName(): string {
-  const filePath = "airdao-nop/state.json";
+  const filePath = "./state.json";
   const key = "network.name";
   try {
     const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -100,13 +103,13 @@ function appendSystemInfoToDebugFile(): void {
     fs.appendFileSync(
       "debug.txt",
       `
-      ${fs.readdirSync("airdao-nop", { withFileTypes: true })}
+      ${fs.readdirSync("./", { withFileTypes: true })}
     `
     );
     fs.appendFileSync(
       "debug.txt",
       `
-      ${fs.readdirSync("airdao-nop/output", { withFileTypes: true })}
+      ${fs.readdirSync("./output", { withFileTypes: true })}
     `
     );
     fs.appendFileSync(

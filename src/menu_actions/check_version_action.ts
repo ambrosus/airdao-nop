@@ -69,7 +69,7 @@ async function getAnswerToFixIssue(answerText) {
 
 async function fixForkIssue() {
   console.log("Fork: fixing ...");
-  execSync("cd ambrosus-nop/output || return");
+  execSync("cd ./output || return");
   execSync("docker stop parity");
   execSync("rm -rf chains");
   execSync("curl -s https://backup.ambrosus.io/blockchain.tgz | tar zxpf -");
@@ -148,7 +148,7 @@ async function syncCheckAndFix(rpcLocal) {
 
 async function checkVersionAction() {
   try {
-    const stateFilePath = "ambrosus-nop/state.json";
+    const stateFilePath = "./state.json";
     const environment = await getVar(stateFilePath, "network.name");
 
     let rpcSuffix = "";

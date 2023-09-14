@@ -26,8 +26,12 @@ export const defaultActions = {
 
 export const selectActionPhase = async (actions = defaultActions) => {
   let shouldQuit = false;
+  const actionsKeys = [];
   while (!shouldQuit) {
-    const { action: selectedAction } = await Dialog.selectActionDialog(actions);
+    for (let action in actions) actionsKeys.push(action);
+    const { action: selectedAction } = await Dialog.selectActionDialog(
+      actionsKeys
+    );
     try {
       shouldQuit = await actions[selectedAction]();
     } catch (err) {
