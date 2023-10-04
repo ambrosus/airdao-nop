@@ -7,10 +7,10 @@
   resolved "https://registry.npmjs.org/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz"
   integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
 
-"@airdao/airdao-node-contracts@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@airdao/airdao-node-contracts/-/airdao-node-contracts-1.1.2.tgz#2dc92870dd2b7a0ade83d985ddedfe3b0fc01c44"
-  integrity sha512-2J2XbQVWJD+0szx6QLch5H7odGEJ1UzSxOgqixy1fK/vYFroOb9dUwaFvC+KMZi3yFm6ATMjHUPza4zasuv2GQ==
+"@airdao/airdao-node-contracts@1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@airdao/airdao-node-contracts/-/airdao-node-contracts-1.1.4.tgz#5dd4a11ed6cc270248c7bb73b49eabfb63cca9f9"
+  integrity sha512-+P8fpCVY4EQGw8zTGdxZuXwA7OdxALFQYB/X9BXpNv4F14ZI6+idP9eIb+Ieam39h4qgpUemxtTxhON/TA3ftg==
   dependencies:
     "@airdao/deployments" "0.2.4"
     ethers "^5.7.2"
