@@ -11,6 +11,8 @@
     "dev:lint": "eslint src test config",
     "dev:lint:fix": "eslint src test config --fix",
     "dev:start": "ts-node src/start.ts",
+    "dev:resetup": "ts-node src/resetup.ts",
+    "resetup": "node dist/src/resetup.js",
     "start": "node dist/src/start.js",
     "test": "./tests.sh"
   },
