@@ -25,7 +25,7 @@ export async function runDocker() {
   await execCmd('docker-compose up -d', {cwd: OUTPUT_DIRECTORY});
 }
 
-async function execCmd(cmd, options?: ExecOptions): Promise<any> {
+export async function execCmd(cmd, options?: ExecOptions): Promise<any> {
   return new Promise((resolve, reject) => {
     exec(cmd, options, (err, stdout, stderr) => {
       if (err === null) {

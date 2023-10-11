@@ -6,16 +6,16 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
-import quitAction from "./quit_action";
-import sendLogsAction from "./send_logs_action";
-import checkVersionAction from "./check_version_action";
-import updateVersionAction from "./update_version_action";
-import resetupAction from "./resetup_action";
+import quitAction from './quit_action';
+import sendLogsAction from './send_logs_action';
+import checkVersionAction from './check_version_action';
+import updateVersionAction from './update_version_action';
+import resetupAction from './resetup_action';
 
 export {
   quitAction,
   sendLogsAction,
   checkVersionAction,
   updateVersionAction,
-  resetupAction,
+  resetupAction
 };

@@ -19,7 +19,7 @@ import runDockerPhase from "./phases/05_run_docker";
 import checkStatusInServerNodes from "./phases/06_check_status_in_server_nodes";
 import { selectActionPhase } from "./phases/07_select_action_phase";
 
-const start = async () => {
+export const start = async () => {
   Dialog.logoDialog();
 
   if (!(await checkDockerAvailablePhase())) {

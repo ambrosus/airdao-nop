@@ -6,36 +6,38 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
-import Dialog from "../dialogs/dialog_model";
-import messages from "../dialogs/messages";
+import Dialog from '../dialogs/dialog_model';
+import messages from '../dialogs/messages';
 import {
   checkVersionAction,
   quitAction,
   resetupAction,
   sendLogsAction,
-  updateVersionAction,
-} from "../menu_actions";
+  updateVersionAction
+} from '../menu_actions';
 
 export const defaultActions = {
   [messages.actions.resetup]: resetupAction,
   [messages.actions.logs]: sendLogsAction,
   [messages.actions.check]: checkVersionAction,
   [messages.actions.update]: updateVersionAction,
-  [messages.actions.quit]: quitAction,
+  [messages.actions.quit]: quitAction
 };
 
 export const selectActionPhase = async (actions = defaultActions) => {
   let shouldQuit = false;
   const actionsKeys = [];
   while (!shouldQuit) {
-    for (let action in actions) actionsKeys.push(action);
-    const { action: selectedAction } = await Dialog.selectActionDialog(
+    for (const action in actions) {
+      actionsKeys.push(action);
+    }
+    const {action: selectedAction} = await Dialog.selectActionDialog(
       actionsKeys
     );
     try {
       shouldQuit = await actions[selectedAction]();
     } catch (err) {
-      if (err.message.includes("Insufficient funds")) {
+      if (err.message.includes('Insufficient funds')) {
         Dialog.insufficientFundsDialog();
       } else {
         Dialog.genericErrorDialog(err.message);

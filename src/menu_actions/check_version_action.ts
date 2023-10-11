@@ -1,11 +1,19 @@
-import axios from "axios";
-import fs from "fs/promises";
-import inquirer from "inquirer";
-import { execSync } from "child_process";
+/*
+Copyright: Ambrosus Inc.
+Email: tech@ambrosus.io
+
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
+*/
+import axios from 'axios';
+import fs from 'fs/promises';
+import inquirer from 'inquirer';
+import {execSync} from 'child_process';
 
 async function getVar(filePath, key) {
   try {
-    const data = await fs.readFile(filePath, "utf8");
+    const data = await fs.readFile(filePath, 'utf8');
     const jsonData = JSON.parse(data);
     const value = jsonData[key];
     return value ? value.toLowerCase() : null;
@@ -17,10 +25,10 @@ async function getVar(filePath, key) {
 async function rpc_syncing(endpoint) {
   try {
     const response = await axios.post(endpoint, {
-      jsonrpc: "2.0",
-      method: "eth_syncing",
+      jsonrpc: '2.0',
+      method: 'eth_syncing',
       params: [],
-      id: 1,
+      id: 1
     });
     return response.data.result === true;
   } catch (error) {
@@ -31,10 +39,10 @@ async function rpc_syncing(endpoint) {
 async function rpc_blockNumber(endpoint) {
   try {
     const response = await axios.post(endpoint, {
-      jsonrpc: "2.0",
-      method: "eth_blockNumber",
+      jsonrpc: '2.0',
+      method: 'eth_blockNumber',
       params: [],
-      id: 1,
+      id: 1
     });
     return response.data.result;
   } catch (error) {
@@ -45,10 +53,10 @@ async function rpc_blockNumber(endpoint) {
 async function rpc_getBlockByNumber(endpoint, blockNumber) {
   try {
     const response = await axios.post(endpoint, {
-      jsonrpc: "2.0",
-      method: "eth_getBlockByNumber",
+      jsonrpc: '2.0',
+      method: 'eth_getBlockByNumber',
       params: [blockNumber, false],
-      id: 1,
+      id: 1
     });
     return response.data.result?.hash || null;
   } catch (error) {
@@ -57,75 +65,74 @@ async function rpc_getBlockByNumber(endpoint, blockNumber) {
 }
 
 async function getAnswerToFixIssue(answerText) {
-  const { answer } = await inquirer.prompt([
+  const {answer} = await inquirer.prompt([
     {
-      type: "input",
-      name: "answer",
-      message: answerText,
-    },
+      type: 'input',
+      name: 'answer',
+      message: answerText
+    }
   ]);
-  return answer.toLowerCase() === "y";
+  return answer.toLowerCase() === 'y';
 }
 
 async function fixForkIssue() {
-  console.log("Fork: fixing ...");
-  execSync("cd ./output || return");
-  execSync("docker stop parity");
-  execSync("rm -rf chains");
-  execSync("curl -s https://backup.ambrosus.io/blockchain.tgz | tar zxpf -");
-  execSync("docker start parity");
-  console.log("Fork: fixed");
+  console.log('Fork: fixing ...');
+  execSync('cd ./output || return');
+  execSync('docker stop parity');
+  execSync('rm -rf chains');
+  execSync('curl -s https://backup.ambrosus.io/blockchain.tgz | tar zxpf -');
+  execSync('docker start parity');
+  console.log('Fork: fixed');
 }
 
 async function fixTopologyIssue() {
-  console.log("Topology: destroyed");
+  console.log('Topology: destroyed');
   const answer = await getAnswerToFixIssue(
-    "Do you want to fix this issue? (y/n):"
+    'Do you want to fix this issue? (y/n):'
   );
   if (answer) {
-    execSync("set -o xtrace");
+    execSync('set -o xtrace');
 
-    execSync("docker stop atlas_server");
-    execSync("docker stop atlas_worker");
-    execSync("docker stop mongod");
+    execSync('docker stop atlas_server');
+    execSync('docker stop atlas_worker');
+    execSync('docker stop mongod');
 
-    execSync("docker start mongod");
-    execSync("docker start atlas_worker");
-    execSync("docker start atlas_server");
-    execSync("set +o xtrace");
+    execSync('docker start mongod');
+    execSync('docker start atlas_worker');
+    execSync('docker start atlas_server');
+    execSync('set +o xtrace');
   }
 }
 
 async function checkURL(urlS) {
   try {
-    const { execSync } = require("child_process");
-    const getUrlJSPath = "ambrosus-nop/dist/src/getUrl.js";
-    const urlC = execSync(`node ${getUrlJSPath}`, { encoding: "utf8" }).trim();
+    const {execSync} = require('child_process');
+    const getUrlJSPath = 'ambrosus-nop/dist/src/getUrl.js';
+    const urlC = execSync(`node ${getUrlJSPath}`, {encoding: 'utf8'}).trim();
 
     if (urlS !== urlC) {
-      console.log("URL[C]: URLs in state.json and contract mismatch");
+      console.log('URL[C]: URLs in state.json and contract mismatch');
       return;
     }
 
     const nodeInfoResponse = await axios.get(`${urlS}/nodeinfo`);
-    const reason = nodeInfoResponse.data.reason;
+    const {reason} = nodeInfoResponse.data;
 
-    if (reason === "Topology was destroyed") {
+    if (reason === 'Topology was destroyed') {
       await fixTopologyIssue();
     } else {
-      console.log("Topology: OK");
+      console.log('Topology: OK');
     }
 
-    const version = nodeInfoResponse.data.version;
+    const {version} = nodeInfoResponse.data;
 
-    if (!version || version === "null") {
-      console.log("URL: nodeinfo check failed");
+    if (!version || version === 'null') {
+      console.log('URL: nodeinfo check failed');
       return;
-    } else {
-      console.log("URL: OK");
     }
+    console.log('URL: OK');
   } catch (error) {
-    console.error("Error:", error);
+    console.error('Error:', error);
   }
 }
 
@@ -133,79 +140,78 @@ async function syncCheckAndFix(rpcLocal) {
   const syncing = await rpc_syncing(rpcLocal);
 
   if (syncing) {
-    console.log("Sync: syncing ... please wait");
+    console.log('Sync: syncing ... please wait');
     return;
-  } else {
-    console.log("Sync: OK");
   }
+  console.log('Sync: OK');
+
 
   const blockNumber = await rpc_blockNumber(rpcLocal);
 
   const blockHashLocal = await rpc_getBlockByNumber(rpcLocal, blockNumber);
 
-  return { blockNumber, blockHashLocal };
+  return {blockNumber, blockHashLocal};
 }
 
 async function checkVersionAction() {
   try {
-    const stateFilePath = "./state.json";
-    const environment = await getVar(stateFilePath, "network.name");
+    const stateFilePath = './state.json';
+    const environment = await getVar(stateFilePath, 'network.name');
 
-    let rpcSuffix = "";
+    let rpcSuffix = '';
     switch (environment) {
-      case "dev":
-        rpcSuffix = "-dev";
+      case 'dev':
+        rpcSuffix = '-dev';
         break;
-      case "test":
-        rpcSuffix = "-test";
+      case 'test':
+        rpcSuffix = '-test';
         break;
       default:
-        rpcSuffix = "";
+        rpcSuffix = '';
     }
 
     const rpcRemote = `https://network.ambrosus${rpcSuffix}.io`;
-    const rpcLocal = "http://127.0.0.1:8545";
+    const rpcLocal = 'http://127.0.0.1:8545';
 
-    console.log("Checking ...");
+    console.log('Checking ...');
 
-    const { blockNumber, blockHashLocal } = await syncCheckAndFix(rpcLocal);
+    const {blockNumber, blockHashLocal} = await syncCheckAndFix(rpcLocal);
 
     const blockHashRemote = await rpc_getBlockByNumber(rpcRemote, blockNumber);
 
     if (!blockHashLocal) {
-      console.log("rpcCall[L]: error");
-      return;
+      throw ('rpcCall[L]: error');
     }
 
     if (!blockHashRemote) {
-      console.log("rpcCall[R]: error, parity is not accessible");
+      console.log('rpcCall[R]: error, parity is not accessible');
       return;
     }
 
     if (blockHashRemote !== blockHashLocal) {
-      console.log("Fork: parity forked ...");
+      console.log('Fork: parity forked ...');
       const shouldFix = await getAnswerToFixIssue(
-        "Do you want to fix this issue? (y/n):"
+        'Do you want to fix this issue? (y/n):'
       );
       if (shouldFix) {
         await fixForkIssue();
       }
     } else {
-      console.log("Fork: OK");
+      console.log('Fork: OK');
     }
 
-    const urlS = await getVar(stateFilePath, "url");
+    const urlS = await getVar(stateFilePath, 'url');
 
     if (!urlS) {
-      console.log("URL[S]: state.json info not found");
+      console.log('URL[S]: state.json info not found');
       return;
     }
 
     await checkURL(urlS);
 
-    console.log("All Checks: passed");
-  } catch (e) {
-    console.error("An error occurred:", e);
+    console.log('All Checks: passed');
+  } catch (err) {
+    console.error('An error occurred:', err);
     return true;
   }
 }

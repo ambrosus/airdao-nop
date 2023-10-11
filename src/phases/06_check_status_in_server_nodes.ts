@@ -9,12 +9,12 @@ This Source Code Form is “Incompatible With Secondary Licenses”, as defined 
 import {
   Contracts,
   Methods,
-  ContractNames,
-} from "@airdao/airdao-node-contracts";
-import Dialog from "../dialogs/dialog_model";
-import { ethers } from "ethers";
-import { Network } from "../interfaces/network";
-import Crypto from "../utils/crypto";
+  ContractNames
+} from '@airdao/airdao-node-contracts';
+import Dialog from '../dialogs/dialog_model';
+import {ethers} from 'ethers';
+import {Network} from '../interfaces/network';
+import Crypto from '../utils/crypto';
 
 export default async function checkStatusInServerNodes(
   privateKey: string,
@@ -24,7 +24,7 @@ export default async function checkStatusInServerNodes(
   const provider = new ethers.providers.JsonRpcProvider(network.rpc);
 
   const signer = new ethers.VoidSigner(ethers.constants.AddressZero, provider);
-  const { chainId } = await provider.getNetwork();
+  const {chainId} = await provider.getNetwork();
 
   const address = Crypto.addressForPrivateKey(privateKey);
 

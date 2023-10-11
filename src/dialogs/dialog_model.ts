@@ -7,10 +7,10 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
 
-import inquirer from "inquirer";
-import chalk from "chalk";
-import messages from "./messages";
-import { isValidIP, isValidPrivateKey } from "../utils/validations";
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+import messages from './messages';
+import {isValidIP, isValidPrivateKey} from '../utils/validations';
 
 class Dialog {
   output = (data: string) => console.log(data);
@@ -61,54 +61,54 @@ class Dialog {
   askForNetworkDialog = async (networks) =>
     inquirer.prompt([
       {
-        type: "list",
-        name: "network",
+        type: 'list',
+        name: 'network',
         message: messages.networkQuestion,
-        choices: networks,
-      },
+        choices: networks
+      }
     ]);
 
   askForNodeIPDialog = async (ipGuess) =>
     inquirer.prompt([
       {
-        type: "confirm",
-        name: "useGuess",
+        type: 'confirm',
+        name: 'useGuess',
         when: () => ipGuess !== null,
-        message: messages.nodeIPGuessQuestion(ipGuess),
+        message: messages.nodeIPGuessQuestion(ipGuess)
       },
       {
-        type: "input",
-        name: "nodeIP",
+        type: 'input',
+        name: 'nodeIP',
         when: (answers) => !answers.useGuess,
         message: messages.nodeIPInputInstruction,
         validate: (answer) =>
           isValidIP(answer) ||
-          chalk.red(messages.nodeIPInputError(chalk.yellow(answer))),
-      },
+          chalk.red(messages.nodeIPInputError(chalk.yellow(answer)))
+      }
     ]);
 
   askForPrivateKeyDialog = async () =>
     inquirer.prompt([
       {
-        type: "list",
-        name: "source",
+        type: 'list',
+        name: 'source',
         message: messages.noPrivateKeyQuestion,
         choices: [
           {
             name: messages.privateKeyManualInputAnswer,
-            value: "manual",
+            value: 'manual'
           },
           {
             name: messages.privateKeyAutoGenerationAnswer,
-            value: "generate",
-          },
-        ],
+            value: 'generate'
+          }
+        ]
       },
       {
-        type: "input",
-        name: "privateKey",
+        type: 'input',
+        name: 'privateKey',
         message: messages.privateKeyInputInstruction,
-        when: (state) => state.source === "manual",
+        when: (state) => state.source === 'manual',
         validate: (answer) =>
           isValidPrivateKey(answer) ||
           chalk.red(messages.privateKeyInputError(chalk.yellow(answer))),
@@ -118,18 +118,18 @@ class Dialog {
             return answer;
           }
           return `0x${answer}`;
-        },
-      },
+        }
+      }
     ]);
 
   selectActionDialog = async (availableActions) =>
     inquirer.prompt([
       {
-        type: "list",
-        name: "action",
+        type: 'list',
+        name: 'action',
         message: messages.selectActionQuestion,
-        choices: availableActions,
-      },
+        choices: availableActions
+      }
     ]);
 
   setupCompleteDialog = () =>
@@ -142,7 +142,7 @@ class Dialog {
     const center = (text, consoleWidth) =>
       text.padStart(consoleWidth / 2 + text.length / 2);
     const consoleWidth = process.stdout.columns;
-    this.output(chalk.yellow("=".repeat(consoleWidth)));
+    this.output(chalk.yellow('='.repeat(consoleWidth)));
     this.output(chalk.yellow(center(messages.warningMessage, consoleWidth)));
     this.output(
       chalk.yellow(center(messages.dockerRestartRequired, consoleWidth))
@@ -150,7 +150,7 @@ class Dialog {
     this.output(
       chalk.yellow(center(messages.dockerComposeCommand, consoleWidth))
     );
-    this.output(chalk.yellow("=".repeat(consoleWidth)));
+    this.output(chalk.yellow('='.repeat(consoleWidth)));
   }
 
   alreadyOnboardedDialog = (explorerUrl, nodeAddress) =>

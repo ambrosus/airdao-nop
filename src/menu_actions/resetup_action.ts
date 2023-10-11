@@ -1,18 +1,25 @@
-import util from "util";
-import childProcess from "child_process";
+/*
+Copyright: Ambrosus Inc.
+Email: tech@ambrosus.io
 
-const exec = util.promisify(childProcess.exec);
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
+*/
+
+import {execCmd} from '../utils/exec';
+import {OUTPUT_DIRECTORY} from '../../config/config';
+import {start} from '../start';
 
 async function resetupAction() {
   try {
-    console.log("Resetup: starting...");
-    await exec("cd airdao-nop");
-    await exec("docker-compose down");
-    await exec(`mv state.json ${Date.now().toString()}-state.json`);
+    console.log('Resetup: starting...');
+    await execCmd('docker-compose down', {cwd: OUTPUT_DIRECTORY});
+    await execCmd(`mv state.json ${Date.now().toString()}-state.json`);
 
-    await exec("yarn build && yarn start");
-  } catch (e) {
-    console.error("An error occurred:", e);
+    await start();
+  } catch (err) {
+    console.error('An error occurred:', err);
     return true;
   }
 }
