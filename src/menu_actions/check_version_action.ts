@@ -9,57 +9,19 @@ This Source Code Form is “Incompatible With Secondary Licenses”, as defined 
 import axios from 'axios';
 import fs from 'fs/promises';
 import inquirer from 'inquirer';
-import {execSync} from 'child_process';
+import {execCmd} from '../utils/exec';
+import {readState} from '../utils/state';
+
+const STATE_FILE_PATH = './state.json';
+
+const RPC_LOCAL = 'http://127.0.0.1:8545';
 
 async function getVar(filePath, key) {
   try {
     const data = await fs.readFile(filePath, 'utf8');
-    const jsonData = JSON.parse(data);
-    const value = jsonData[key];
-    return value ? value.toLowerCase() : null;
+    return JSON.parse(data)[key]?.toLowerCase() || null;
   } catch (error) {
-    return null;
-  }
-}
-
-async function rpc_syncing(endpoint) {
-  try {
-    const response = await axios.post(endpoint, {
-      jsonrpc: '2.0',
-      method: 'eth_syncing',
-      params: [],
-      id: 1
-    });
-    return response.data.result === true;
-  } catch (error) {
-    return false;
-  }
-}
-
-async function rpc_blockNumber(endpoint) {
-  try {
-    const response = await axios.post(endpoint, {
-      jsonrpc: '2.0',
-      method: 'eth_blockNumber',
-      params: [],
-      id: 1
-    });
-    return response.data.result;
-  } catch (error) {
-    return null;
-  }
-}
-
-async function rpc_getBlockByNumber(endpoint, blockNumber) {
-  try {
-    const response = await axios.post(endpoint, {
-      jsonrpc: '2.0',
-      method: 'eth_getBlockByNumber',
-      params: [blockNumber, false],
-      id: 1
-    });
-    return response.data.result?.hash || null;
-  } catch (error) {
+    console.error('Error reading the file:', error);
     return null;
   }
 }
@@ -75,56 +37,58 @@ async function getAnswerToFixIssue(answerText) {
   return answer.toLowerCase() === 'y';
 }
 
+async function fixIssues(type) {
+  switch (type) {
+    case 'fork':
+      await fixForkIssue();
+      break;
+    case 'topology':
+      await fixTopologyIssue();
+      break;
+  }
+}
+
 async function fixForkIssue() {
-  console.log('Fork: fixing ...');
-  execSync('cd ./output || return');
-  execSync('docker stop parity');
-  execSync('rm -rf chains');
-  execSync('curl -s https://backup.ambrosus.io/blockchain.tgz | tar zxpf -');
-  execSync('docker start parity');
-  console.log('Fork: fixed');
+  console.log('Fixing fork...');
+  await execCmds([
+    'cd ./output || return',
+    'docker stop parity',
+    'rm -rf chains',
+    'curl -s https://backup.ambrosus.io/blockchain.tgz | tar zxpf -',
+    'docker start parity'
+  ]);
+  console.log('Fork fixed');
 }
 
 async function fixTopologyIssue() {
   console.log('Topology: destroyed');
-  const answer = await getAnswerToFixIssue(
-    'Do you want to fix this issue? (y/n):'
-  );
+  const answer = await getAnswerToFixIssue('Do you want to fix this issue? (y/n):');
   if (answer) {
-    execSync('set -o xtrace');
-
-    execSync('docker stop atlas_server');
-    execSync('docker stop atlas_worker');
-    execSync('docker stop mongod');
-
-    execSync('docker start mongod');
-    execSync('docker start atlas_worker');
-    execSync('docker start atlas_server');
-    execSync('set +o xtrace');
+    await execCmds([
+      'set -o xtrace',
+      'docker stop atlas_server atlas_worker mongod',
+      'docker start mongod atlas_worker atlas_server',
+      'set +o xtrace'
+    ]);
   }
 }
 
-async function checkURL(urlS) {
+async function execCmds(cmds) {
+  for (const cmd of cmds) {
+    await execCmd(cmd);
+  }
+}
+
+async function checkURL(url) {
   try {
-    const {execSync} = require('child_process');
-    const getUrlJSPath = 'ambrosus-nop/dist/src/getUrl.js';
-    const urlC = execSync(`node ${getUrlJSPath}`, {encoding: 'utf8'}).trim();
-
-    if (urlS !== urlC) {
-      console.log('URL[C]: URLs in state.json and contract mismatch');
-      return;
-    }
-
-    const nodeInfoResponse = await axios.get(`${urlS}/nodeinfo`);
-    const {reason} = nodeInfoResponse.data;
+    const nodeInfoResponse = await axios.get(`${url}/nodeinfo`);
+    const {reason, version} = nodeInfoResponse.data;
 
     if (reason === 'Topology was destroyed') {
-      await fixTopologyIssue();
+      await fixIssues('topology');
     } else {
       console.log('Topology: OK');
     }
-
-    const {version} = nodeInfoResponse.data;
 
     if (!version || version === 'null') {
       console.log('URL: nodeinfo check failed');
@@ -136,83 +100,68 @@ async function checkURL(urlS) {
   }
 }
 
-async function syncCheckAndFix(rpcLocal) {
-  const syncing = await rpc_syncing(rpcLocal);
-
-  if (syncing) {
-    console.log('Sync: syncing ... please wait');
-    return;
-  }
-  console.log('Sync: OK');
-
-
-  const blockNumber = await rpc_blockNumber(rpcLocal);
-
-  const blockHashLocal = await rpc_getBlockByNumber(rpcLocal, blockNumber);
-
-  return {blockNumber, blockHashLocal};
-}
-
 async function checkVersionAction() {
   try {
-    const stateFilePath = './state.json';
-    const environment = await getVar(stateFilePath, 'network.name');
-
-    let rpcSuffix = '';
-    switch (environment) {
-      case 'dev':
-        rpcSuffix = '-dev';
-        break;
-      case 'test':
-        rpcSuffix = '-test';
-        break;
-      default:
-        rpcSuffix = '';
-    }
-
+    const state = await readState();
+    const environment = state.network.name;
+    const rpcSuffix = {dev: '-dev', test: '-test'}[environment] || '';
     const rpcRemote = `https://network.ambrosus${rpcSuffix}.io`;
-    const rpcLocal = 'http://127.0.0.1:8545';
 
-    console.log('Checking ...');
+    console.log('Checking...');
 
-    const {blockNumber, blockHashLocal} = await syncCheckAndFix(rpcLocal);
-
-    const blockHashRemote = await rpc_getBlockByNumber(rpcRemote, blockNumber);
-
-    if (!blockHashLocal) {
-      throw ('rpcCall[L]: error');
+    const syncing = await rpcCall(RPC_LOCAL, 'eth_syncing');
+    if (syncing) {
+      console.log('Syncing... please wait');
+      return true;
     }
+    console.log('Sync: OK');
 
-    if (!blockHashRemote) {
-      console.log('rpcCall[R]: error, parity is not accessible');
-      return;
-    }
+    const blockNumber = await rpcCall(RPC_LOCAL, 'eth_blockNumber');
+    const blockHashLocal = await rpcCall(RPC_LOCAL, 'eth_getBlockByNumber', [
+      blockNumber,
+      false
+    ]);
+    const blockHashRemote = await rpcCall(rpcRemote, 'eth_getBlockByNumber', [
+      blockNumber,
+      false
+    ]);
 
     if (blockHashRemote !== blockHashLocal) {
-      console.log('Fork: parity forked ...');
+      console.log('Fork: Parity has forked...');
       const shouldFix = await getAnswerToFixIssue(
         'Do you want to fix this issue? (y/n):'
       );
       if (shouldFix) {
-        await fixForkIssue();
+        await fixIssues('fork');
       }
     } else {
       console.log('Fork: OK');
     }
 
-    const urlS = await getVar(stateFilePath, 'url');
-
-    if (!urlS) {
-      console.log('URL[S]: state.json info not found');
-      return;
+    const url = await getVar(STATE_FILE_PATH, 'url');
+    if (url) {
+      await checkURL(url);
     }
 
-    await checkURL(urlS);
-
     console.log('All Checks: passed');
+    return false;
   } catch (err) {
     console.error('An error occurred:', err);
-    return true;
+  }
+}
+
+async function rpcCall(endpoint, method, params = []) {
+  try {
+    const response = await axios.post(endpoint, {
+      jsonrpc: '2.0',
+      method,
+      params,
+      id: 1
+    });
+    return response.data.result;
+  } catch (error) {
+    console.error(`Error during RPC ${method} call:`, error);
+    process.exit(1);
   }
 }
 

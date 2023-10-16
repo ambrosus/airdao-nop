@@ -7,10 +7,10 @@
   resolved "https://registry.npmjs.org/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz"
   integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
 
-"@airdao/airdao-node-contracts@1.0.35":
-  version "1.0.35"
-  resolved "https://registry.yarnpkg.com/@airdao/airdao-node-contracts/-/airdao-node-contracts-1.0.35.tgz#ec43144783ad1a21ea9ef909ea01e904f5731bcc"
-  integrity sha512-w1Dk3+ecwPHq/6lLZ3kU6DdkdoCxsh8ByXd/nY3C4ALSAwf/193zvpuT5IDnUA32Wp+f08MgEbInMBZq0ubDaA==
+"@airdao/airdao-node-contracts@1.1.14":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@airdao/airdao-node-contracts/-/airdao-node-contracts-1.1.6.tgz#d60ebea07af9544af051ea0d8a45fc5971730ea7"
+  integrity sha512-qmSdwPOWKGN1lpawQq6JNizuco0QN14h6n92JxCyY6gcaJqZQhSwXPujsKxshJyP+mmotuIzafQv93zwrzAsRw==
   dependencies:
     "@airdao/deployments" "0.2.4"
     ethers "^5.7.2"
@@ -652,10 +652,10 @@
   resolved "https://registry.npmjs.org/@types/http-cache-semantics/-/http-cache-semantics-4.0.1.tgz"
   integrity sha512-SZs7ekbP8CN0txVG2xVRH6EgKmEm31BOxA07vkFaETzZz1xh+cbt8BcI0slpymvwhx5dlFnQG2rTlPVQn+iRPQ==
 
-"@types/inquirer@^9.0.3":
-  version "9.0.3"
-  resolved "https://registry.yarnpkg.com/@types/inquirer/-/inquirer-9.0.3.tgz#dc99da4f2f6de9d26c284b4f6aaab4d98c456db1"
-  integrity sha512-CzNkWqQftcmk2jaCWdBTf9Sm7xSw4rkI1zpU/Udw3HX5//adEZUIm9STtoRP1qgWj0CWQtJ9UTvqmO2NNjhMJw==
+"@types/inquirer@^9.0.4":
+  version "9.0.4"
+  resolved "https://registry.yarnpkg.com/@types/inquirer/-/inquirer-9.0.4.tgz#f20d6bce87c2aef4fabe8de9e3a397e80aea309f"
+  integrity sha512-x8UgutCLm5tsp995aeYB8dlT+sGBCtv0zE43tHvo7OljtlA2Rn4+COyLKe9+YjB20uy0G14y0C9vCD2KtNtyGA==
   dependencies:
     "@types/through" "*"
     rxjs "^7.2.0"

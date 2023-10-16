@@ -27,21 +27,23 @@ export const defaultActions = {
 export const selectActionPhase = async (actions = defaultActions) => {
   let shouldQuit = false;
   const actionsKeys = [];
+  for (const action in actions) {
+    actionsKeys.push(action);
+  }
   while (!shouldQuit) {
-    for (const action in actions) {
-      actionsKeys.push(action);
-    }
     const {action: selectedAction} = await Dialog.selectActionDialog(
       actionsKeys
     );
     try {
       shouldQuit = await actions[selectedAction]();
+      console.log('shouldquit after action', shouldQuit);
     } catch (err) {
       if (err.message.includes('Insufficient funds')) {
         Dialog.insufficientFundsDialog();
-      } else {
-        Dialog.genericErrorDialog(err.message);
+        return;
       }
+      Dialog.genericErrorDialog(err.message);
+      return;
     }
   }
   return;

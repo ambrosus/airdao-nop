@@ -20,7 +20,7 @@ async function resetupAction() {
     await start();
   } catch (err) {
     console.error('An error occurred:', err);
-    return true;
+    process.exit(1);
   }
 }
 

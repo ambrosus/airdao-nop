@@ -7,38 +7,12 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
 import * as fs from 'fs';
-import {execSync} from 'child_process';
 import inquirer from 'inquirer';
-import Crypto from '../utils/crypto';
+import {readState} from '../utils/state';
+import {execCmd} from '../utils/exec';
 
-function getPrivateKey() {
-  const filePath = './state.json';
-  try {
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(fileContents);
-    const privateKey = data.privateKey || '';
-
-    return privateKey;
-  } catch (error) {
-    console.error('Error reading or parsing private key:', error);
-    return '';
-  }
-}
-
-function getAddress(privateKey: string): string {
-  return Crypto.addressForPrivateKey(privateKey);
-}
-
-function getNetworkName(): string {
-  const filePath = './state.json';
-  const key = 'network.name';
-  try {
-    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    return (data[key] || '').toLowerCase();
-  } catch (error) {
-    return '';
-  }
-}
+const LOG_URL = 'https://transfer.ambrosus.io';
+const NODE_CHECK_URL = 'https://node-check.ambrosus.io/';
 
 function getCurrentTimestamp(): number {
   return Date.now();
@@ -58,18 +32,22 @@ function writeDebugInfo(
 }
 
 async function promptUserToSendDebugFiles(): Promise<boolean> {
-  console.log('The information being sent is the following:');
-  console.log('* Current working directory');
-  console.log('* Output of /etc/os-release');
-  console.log('* Output of /proc/meminfo');
-  console.log('* Directory contents of airdao-nop');
-  console.log('* Directory contents of airdao-nop/output');
-  console.log('* Disk block information');
-  console.log('* Disk inodes information');
-  console.log('* Process tree');
-  console.log('* Memory usage');
+  const messages = [
+    'The information being sent is the following:',
+    '* Current working directory',
+    '* OS Release',
+    '* Memory Info',
+    '* Directory Contents',
+    '* Output Directory Contents',
+    '* Disk Block Info',
+    '* Disk Inodes Info',
+    '* Process Tree',
+    '* Memory Usage'
+  ];
 
-  const answers = await inquirer.prompt([
+  console.log(messages.join('\n'));
+
+  const {proceed} = await inquirer.prompt([
     {
       type: 'confirm',
       name: 'proceed',
@@ -77,122 +55,90 @@ async function promptUserToSendDebugFiles(): Promise<boolean> {
     }
   ]);
 
-  return !!answers.proceed;
+  return proceed;
 }
 
-function appendSystemInfoToDebugFile(): void {
-  execSync('set -o xtrace');
+async function appendSystemInfoToDebugFile(): Promise<string> {
+  const commands = [
+    {label: 'Working Directory', cmd: process.cwd},
+    {
+      label: 'OS Release',
+      cmd: () => fs.readFileSync('/etc/os-release', 'utf8')
+    },
+    {
+      label: 'Memory Info',
+      cmd: () => fs.readFileSync('/proc/meminfo', 'utf8')
+    },
+    {
+      label: 'Directory Contents',
+      cmd: () => fs.readdirSync('./', {withFileTypes: true}).toString()
+    },
+    {
+      label: 'Output Directory Contents',
+      cmd: () => fs.readdirSync('./output', {withFileTypes: true}).toString()
+    },
+    {label: 'Disk Block Info', cmd: 'df -h'},
+    {label: 'Disk Inodes Info', cmd: 'df -i'},
+    {label: 'Process Tree', cmd: 'ps axjf'},
+    {label: 'Memory Usage', cmd: 'free -m'}
+  ];
 
-  {
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${process.cwd()}
-    `
-    );
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${fs.readFileSync('/etc/os-release', 'utf8')}
-    `
-    );
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${fs.readFileSync('/proc/meminfo', 'utf8')}
-    `
-    );
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${fs.readdirSync('./', {withFileTypes: true})}
-    `
-    );
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${fs.readdirSync('./output', {withFileTypes: true})}
-    `
-    );
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${execSync('df -h')}
-    `
-    );
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${execSync('df -i')}
-    `
-    );
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${execSync('ps axjf')}
-    `
-    );
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${execSync('free -m')}
-    `
-    );
-    fs.appendFileSync(
-      'debug.txt',
-      `
-      ${fs.readFileSync('/proc/meminfo', 'utf8')}
-    `
-    );
+  let result = '';
+  for (const command of commands) {
+    try {
+      const output =
+        typeof command.cmd === 'function'
+          ? command.cmd()
+          : await execCmd(command.cmd);
+      result += `\n\n${command.label}:\n${output}`;
+    } catch (err) {
+      result += `\n\nError getting ${command.label}: ${err.message}`;
+    }
   }
 
   try {
     process.chdir('airdao-nop/output');
-
-    fs.appendFileSync('../../debug.txt', 'compose.logs\n');
-    fs.appendFileSync(
-      '../../debug.txt',
-      execSync('docker-compose logs --tail=500')
-    );
-
+    result += '\n\ncompose.logs:\n';
+    result += await execCmd('docker-compose logs --tail=500');
     process.chdir('../..');
   } catch (error) {
-    console.error('Error while changing directory:', error.message);
+    result += `\n\nError while changing directory or fetching compose logs: ${error.message}`;
   }
 
-  execSync('set +o xtrace');
+  return result;
 }
 
-function uploadDebugFiles(address: string, timestamp: number): void {
-  const logURL = 'https://transfer.ambrosus.io';
-  const debugUrl = execSync(
-    `curl -s --upload-file ./debug.txt ${logURL}/${address}-${timestamp}-debug.txt`,
-    {encoding: 'utf8'}
-  );
+async function uploadDebugFiles(address: string, timestamp: number): Promise<void> {
+  const debugUrl = await execCmd(`curl -s --upload-file ./debug.txt ${LOG_URL}/${address}-${timestamp}-debug.txt`);
 
-  execSync(
-    `curl -X POST --data-urlencode "payload={"attachments": [{"title":"${address}-${timestamp}","text":"${debugUrl}"},]}" https://node-check.ambrosus.io/`
-  );
+  const payload = JSON.stringify({
+    attachments: [{
+      title: `${address}-${timestamp}`,
+      text: debugUrl
+    }]
+  });
+
+  await execCmd(`curl -X POST --data-urlencode 'payload=${payload}' ${NODE_CHECK_URL}`);
 }
 
 async function sendLogsAction(): Promise<boolean> {
   try {
-    const privateKey = getPrivateKey();
-    const address = getAddress(privateKey);
-    const network = getNetworkName();
+    const {address, network} = await readState();
     const timestamp = getCurrentTimestamp();
 
-    writeDebugInfo(address, network, timestamp);
+    writeDebugInfo(address, network.name, timestamp);
 
     const shouldSendDebugFiles = await promptUserToSendDebugFiles();
 
     if (shouldSendDebugFiles) {
-      appendSystemInfoToDebugFile();
-      uploadDebugFiles(address, timestamp);
+      await appendSystemInfoToDebugFile();
+      await uploadDebugFiles(address, timestamp);
     }
+
+    return false;
   } catch (err) {
     console.error('An error occurred:', err);
-    return true;
+    process.exit(1);
   }
 }
 
