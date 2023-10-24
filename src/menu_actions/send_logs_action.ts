@@ -75,7 +75,7 @@ async function appendSystemInfoToDebugFile(): Promise<string> {
     },
     {
       label: 'Output Directory Contents',
-      cmd: () => fs.readdirSync('./output', {withFileTypes: true}).toString()
+      cmd: () => fs.readdirSync('/output', {withFileTypes: true}).toString()
     },
     {label: 'Disk Block Info', cmd: 'df -h'},
     {label: 'Disk Inodes Info', cmd: 'df -i'},

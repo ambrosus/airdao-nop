@@ -14,11 +14,11 @@ import {execCmd} from '../utils/exec';
 
 const writeFileAsync = util.promisify(fs.writeFile);
 const fileExistsAsync = util.promisify(fs.exists);
-const CRON_DAILY_PATH = './etc/cron.daily/airdao-nop';
-const SYSCTL_CONFIG_PATH = './etc/sysctl.d/10-airdao.conf';
+const CRON_DAILY_PATH = '/etc/cron.daily/airdao-nop';
+const SYSCTL_CONFIG_PATH = '/etc/sysctl.d/10-airdao.conf';
 
 async function updateDockerCompose() {
-  if (await fileExistsAsync('./output/docker-compose.yml')) {
+  if (await fileExistsAsync('/output/docker-compose.yml')) {
     await execCmd('yarn start update');
     await execCmd('docker-compose -f output/docker-compose.yml pull');
     await execCmd('docker-compose -f output/docker-compose.yml down');
@@ -27,7 +27,7 @@ async function updateDockerCompose() {
 }
 
 async function setDailyCron(scriptDirectory: string) {
-  if (fs.existsSync('./etc/cron.daily')) {
+  if (fs.existsSync('/etc/cron.daily')) {
     if (fs.existsSync(CRON_DAILY_PATH)) {
       fs.unlinkSync(CRON_DAILY_PATH);
     }

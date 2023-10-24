@@ -9,8 +9,8 @@ This Source Code Form is “Incompatible With Secondary Licenses”, as defined 
 import axios from 'axios';
 import fs from 'fs/promises';
 import inquirer from 'inquirer';
-import {execCmd} from '../utils/exec';
 import {readState} from '../utils/state';
+import {execCmd} from '../utils/exec';
 
 const STATE_FILE_PATH = './state.json';
 
