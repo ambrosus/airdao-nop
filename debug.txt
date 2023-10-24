@@ -1,7 +1,0 @@
-
-    Address: 0x9D9d0fd4eB228810772c80EE51a04d6B1f42374C
-    Network: 
-    Timestamp: 1696565446332
-  
-      /Users/serezhaolshanivskyi/WebstormProjects/airdao-nop
-    
