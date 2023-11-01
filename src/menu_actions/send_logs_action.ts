@@ -8,8 +8,11 @@ This Source Code Form is “Incompatible With Secondary Licenses”, as defined 
 */
 import * as fs from 'fs';
 import inquirer from 'inquirer';
+import {promises as fsPromises} from 'fs';
 import {readState} from '../utils/state';
 import {execCmd} from '../utils/exec';
+import axios from 'axios';
+import path from 'path';
 
 const LOG_URL = 'https://transfer.ambrosus.io';
 const NODE_CHECK_URL = 'https://node-check.ambrosus.io/';
@@ -108,17 +111,32 @@ async function appendSystemInfoToDebugFile(): Promise<string> {
   return result;
 }
 
-async function uploadDebugFiles(address: string, timestamp: number): Promise<void> {
-  const debugUrl = await execCmd(`curl -s --upload-file ./debug.txt ${LOG_URL}/${address}-${timestamp}-debug.txt`);
+async function uploadDebugFiles(
+  address: string,
+  timestamp: number
+): Promise<void> {
+  const filePath = path.join(__dirname, '../../../debug.txt');
+  const fileBuffer = await fsPromises.readFile(filePath);
 
-  const payload = JSON.stringify({
-    attachments: [{
-      title: `${address}-${timestamp}`,
-      text: debugUrl
-    }]
+  const uploadUrl = `${LOG_URL}/${address}-${timestamp}-debug.txt`;
+  const response = await axios.put(uploadUrl, fileBuffer, {
+    headers: {
+      'Content-Type': 'text/plain'
+    }
   });
 
-  await execCmd(`curl -X POST --data-urlencode 'payload=${payload}' ${NODE_CHECK_URL}`);
+  const debugUrl = response.data;
+
+  const payload = {
+    attachments: [
+      {
+        title: `${address}-${timestamp}`,
+        text: debugUrl
+      }
+    ]
+  };
+
+  await axios.post(NODE_CHECK_URL, payload);
 }
 
 async function sendLogsAction(): Promise<boolean> {

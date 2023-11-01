@@ -15,11 +15,12 @@
     "test": "./tests.sh"
   },
   "dependencies": {
-    "@airdao/airdao-node-contracts": "1.1.14",
+    "@airdao/airdao-node-contracts": "1.1.7",
     "@types/inquirer": "^9.0.4",
     "axios": "^1.4.0",
     "base64url": "^3.0.1",
     "chalk": "^4.1.1",
+    "form-data": "^4.0.0",
     "inquirer": "^6.5.2",
     "ip-regex": "^4.3.0",
     "ts-node": "^10.4.0",
