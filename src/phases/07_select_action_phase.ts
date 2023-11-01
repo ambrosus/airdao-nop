@@ -9,7 +9,7 @@ This Source Code Form is “Incompatible With Secondary Licenses”, as defined 
 import Dialog from '../dialogs/dialog_model';
 import messages from '../dialogs/messages';
 import {
-  checkVersionAction,
+  check,
   quitAction,
   resetupAction,
   sendLogsAction,
@@ -19,7 +19,7 @@ import {
 export const defaultActions = {
   [messages.actions.resetup]: resetupAction,
   [messages.actions.logs]: sendLogsAction,
-  [messages.actions.check]: checkVersionAction,
+  [messages.actions.check]: check,
   [messages.actions.update]: updateVersionAction,
   [messages.actions.quit]: quitAction
 };

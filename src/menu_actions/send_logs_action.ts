@@ -17,38 +17,52 @@ import path from 'path';
 const LOG_URL = 'https://transfer.ambrosus.io';
 const NODE_CHECK_URL = 'https://node-check.ambrosus.io/';
 
-function getCurrentTimestamp(): number {
-  return Date.now();
-}
 
-function writeDebugInfo(
-  address: string,
-  network: string,
-  timestamp: number
-): void {
-  const debugInfo = `
+
+async function sendLogsAction(): Promise<boolean> {
+  try {
+    const {address, network} = await readState();
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    let debugInfo = `
     Address: ${address}
     Network: ${network}
     Timestamp: ${timestamp}
   `;
-  fs.writeFileSync('debug.txt', debugInfo);
+    fs.writeFileSync('./debug.txt', debugInfo, 'utf8');
+
+    const shouldSendDebugFiles = await promptUserToSendDebugFiles();
+
+    if (!shouldSendDebugFiles) {
+      return false;
+    }
+
+    debugInfo += await moreDebugInfo();
+    fs.writeFileSync('./debug.txt', debugInfo, 'utf8');
+
+    await uploadDebugFiles(address, timestamp);
+    return false;
+  } catch (err) {
+    console.error('An error occurred:', err);
+    process.exit(1);
+  }
 }
 
-async function promptUserToSendDebugFiles(): Promise<boolean> {
-  const messages = [
-    'The information being sent is the following:',
-    '* Current working directory',
-    '* OS Release',
-    '* Memory Info',
-    '* Directory Contents',
-    '* Output Directory Contents',
-    '* Disk Block Info',
-    '* Disk Inodes Info',
-    '* Process Tree',
-    '* Memory Usage'
-  ];
 
-  console.log(messages.join('\n'));
+
+async function promptUserToSendDebugFiles(): Promise<boolean> {
+  console.log(
+    `The information being sent is the following:
+    \n* Current working directory
+    \n* OS Release
+    \n* Memory Info
+    \n* Directory Contents
+    \n* Output Directory Contents
+    \n* Disk Block Info
+    \n* Disk Inodes Info
+    \n* Process Tree
+    \n* Memory Usage`
+  );
 
   const {proceed} = await inquirer.prompt([
     {
@@ -61,54 +75,30 @@ async function promptUserToSendDebugFiles(): Promise<boolean> {
   return proceed;
 }
 
-async function appendSystemInfoToDebugFile(): Promise<string> {
-  const commands = [
-    {label: 'Working Directory', cmd: process.cwd},
-    {
-      label: 'OS Release',
-      cmd: () => fs.readFileSync('/etc/os-release', 'utf8')
-    },
-    {
-      label: 'Memory Info',
-      cmd: () => fs.readFileSync('/proc/meminfo', 'utf8')
-    },
-    {
-      label: 'Directory Contents',
-      cmd: () => fs.readdirSync('./', {withFileTypes: true}).toString()
-    },
-    {
-      label: 'Output Directory Contents',
-      cmd: () => fs.readdirSync('/output', {withFileTypes: true}).toString()
-    },
-    {label: 'Disk Block Info', cmd: 'df -h'},
-    {label: 'Disk Inodes Info', cmd: 'df -i'},
-    {label: 'Process Tree', cmd: 'ps axjf'},
-    {label: 'Memory Usage', cmd: 'free -m'}
-  ];
+async function moreDebugInfo(): Promise<string> {
+  const cwd = process.cwd();
+  const osRelease = await execCmdSafe('cat /etc/os-release');
+  const memoryInfo = await execCmdSafe('cat /proc/meminfo');
+  const directoryContents = await execCmdSafe('ls -la');
+  const outputDirectoryContents = await execCmdSafe('ls -la airdao-nop/output');
+  const diskBlockInfo = await execCmdSafe('df -h');
+  const diskInodesInfo = await execCmdSafe('df -i');
+  const processTree = await execCmdSafe('ps axjf');
+  const memoryUsage = await execCmdSafe('free -m');
+  const composeLogs = await getDockerLogs();
 
-  let result = '';
-  for (const command of commands) {
-    try {
-      const output =
-        typeof command.cmd === 'function'
-          ? command.cmd()
-          : await execCmd(command.cmd);
-      result += `\n\n${command.label}:\n${output}`;
-    } catch (err) {
-      result += `\n\nError getting ${command.label}: ${err.message}`;
-    }
-  }
-
-  try {
-    process.chdir('airdao-nop/output');
-    result += '\n\ncompose.logs:\n';
-    result += await execCmd('docker-compose logs --tail=500');
-    process.chdir('../..');
-  } catch (error) {
-    result += `\n\nError while changing directory or fetching compose logs: ${error.message}`;
-  }
-
-  return result;
+  return `
+    Working directory: ${cwd}
+    OS Release: ${osRelease}
+    Memory Info: ${memoryInfo}
+    Directory Contents: ${directoryContents}
+    Output Directory Contents: ${outputDirectoryContents}
+    Disk Block Info: ${diskBlockInfo}
+    Disk Inodes Info: ${diskInodesInfo}
+    Process Tree: ${processTree}
+    Memory Usage: ${memoryUsage}
+    compose.logs: ${composeLogs}
+  `;
 }
 
 async function uploadDebugFiles(
@@ -139,24 +129,21 @@ async function uploadDebugFiles(
   await axios.post(NODE_CHECK_URL, payload);
 }
 
-async function sendLogsAction(): Promise<boolean> {
+async function getDockerLogs() {
   try {
-    const {address, network} = await readState();
-    const timestamp = getCurrentTimestamp();
+    process.chdir('airdao-nop/output');
+    return await execCmdSafe('docker-compose logs --tail=500');
+  } catch (error) {
+    return `\n\nError while changing directory or fetching compose logs: ${error.message}`;
+  }
+}
 
-    writeDebugInfo(address, network.name, timestamp);
 
-    const shouldSendDebugFiles = await promptUserToSendDebugFiles();
-
-    if (shouldSendDebugFiles) {
-      await appendSystemInfoToDebugFile();
-      await uploadDebugFiles(address, timestamp);
-    }
-
-    return false;
-  } catch (err) {
-    console.error('An error occurred:', err);
-    process.exit(1);
+async function execCmdSafe(cmd) {
+  try {
+    return await execCmd(cmd);
+  } catch (error) {
+    return `\n\nError while executing ${cmd}: ${error.message}`;
   }
 }
 
