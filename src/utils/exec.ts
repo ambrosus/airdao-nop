@@ -25,6 +25,15 @@ export async function runDocker() {
   await execCmd('docker-compose up -d', {cwd: OUTPUT_DIRECTORY});
 }
 
+export async function stopDocker() {
+  await execCmd('docker-compose down', {cwd: OUTPUT_DIRECTORY});
+}
+
+export async function deleteDockerAndParityFiles() {
+  await execCmd('rm -rf docker-compose.yml', {cwd: OUTPUT_DIRECTORY});
+  await execCmd('rm -rf parity_config.toml', {cwd: OUTPUT_DIRECTORY});
+}
+
 async function execCmd(cmd, options?: ExecOptions): Promise<any> {
   return new Promise((resolve, reject) => {
     exec(cmd, options, (err, stdout, stderr) => {
