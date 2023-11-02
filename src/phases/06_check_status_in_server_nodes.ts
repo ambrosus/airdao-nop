@@ -18,7 +18,8 @@ import Crypto from '../utils/crypto';
 
 export default async function checkStatusInServerNodes(
   privateKey: string,
-  network: Network
+  network: Network,
+  explorerUrl: string
 ) {
   const currentTimeInSeconds = Date.now() / 1000;
   const provider = new ethers.providers.JsonRpcProvider(network.rpc);
@@ -31,12 +32,12 @@ export default async function checkStatusInServerNodes(
   const contracts = new Contracts(signer, chainId);
   const validator = await Methods.getApolloInfo(contracts, address);
   if (!validator) {
-    Dialog.notRegisteredDialog(network.domain);
+    Dialog.notRegisteredDialog(explorerUrl);
     return;
   }
 
   if (validator.isOnboarded) {
-    Dialog.alreadyOnboardedDialog(network.domain, address);
+    Dialog.alreadyOnboardedDialog(explorerUrl, address);
     return;
   } else if (!validator.isOnboarded) {
     const contract = contracts.getContractByName(

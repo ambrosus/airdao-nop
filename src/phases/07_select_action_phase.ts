@@ -36,7 +36,6 @@ export const selectActionPhase = async (actions = defaultActions) => {
     );
     try {
       shouldQuit = await actions[selectedAction]();
-      console.log('shouldquit after action', shouldQuit);
     } catch (err) {
       if (err.message.includes('Insufficient funds')) {
         Dialog.insufficientFundsDialog();

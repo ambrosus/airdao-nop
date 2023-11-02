@@ -14,4 +14,5 @@ export default interface State {
   privateKey: string;
   address: string;
   ip: string;
+  explorerUrl: string;
 };

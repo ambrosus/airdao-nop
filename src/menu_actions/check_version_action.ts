@@ -10,6 +10,7 @@ import inquirer from 'inquirer';
 import {readState} from '../utils/state';
 import {execCmd} from '../utils/exec';
 import {ethers} from 'ethers';
+import axios from 'axios';
 
 
 const RPC_LOCAL = 'http://127.0.0.1:8545';
@@ -29,12 +30,69 @@ async function check() {
 
     await checkSyncing(providerLocal);
     await checkFork(providerLocal, providerRemote);
-    // todo old git version check
+    const {url} = providerLocal.connection;
+    if (url) {
+      await checkURL(url);
+    } // TODO: ask if we need it
+    await checkGitVersion();
 
     console.log('All Checks: passed');
     return false;
   } catch (err) {
     console.error('An error occurred:', err);
+  }
+}
+
+async function checkURL(url: string) {
+  try {
+    const nodeInfoResponse = await axios.get(`${url}/nodeinfo`);
+    const {reason, version} = nodeInfoResponse.data;
+
+    if (reason === 'Topology was destroyed') {
+      console.log('Topology: destroyed');
+      const answer = await getAnswerToFixIssue('Do you want to fix this issue? (y/n):');
+      if (answer) {
+        await execCmds([
+          'set -o xtrace',
+          'docker stop atlas_server atlas_worker mongod',
+          'docker start mongod atlas_worker atlas_server',
+          'set +o xtrace'
+        ]);
+      }
+    } else {
+      console.log('Topology: OK');
+    }
+
+    if (!version || version === 'null') {
+      console.log('URL: nodeinfo check failed');
+      return;
+    }
+    console.log('URL: OK');
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+async function checkGitVersion() {
+  const pullResult = await execCmd('git pull --quiet origin master');
+
+  if (pullResult) {
+    console.log('Version: old version detected, updating ...');
+    const answer = await getAnswerToFixIssue('Do you want to fix this issue? (y/n):');
+
+    if (answer) {
+      console.log('Updating...');
+      console.log('Setting Docker Compose down...');
+      await execCmd('docker-compose down');
+
+      console.log('Running ./update.sh...');
+      await execCmd('./update.sh', {cwd: '../../'});
+
+      console.log('Running Docker Compose up...');
+      await execCmd('docker-compose up -d', {cwd: '../../output'});
+    }
+  } else {
+    console.log('Version: OK');
   }
 }
 
@@ -50,9 +108,8 @@ async function checkSyncing(provider: ethers.providers.JsonRpcProvider) {
 
 
 async function checkFork(providerLocal: ethers.providers.JsonRpcProvider, providerRemote: ethers.providers.JsonRpcProvider) {
-
   const {number: blockNumber, hash: blockHashLocal} = await providerLocal.getBlock('latest');
-  const {hash: blockHashRemote} = await providerRemote.getBlock(blockNumber)
+  const {hash: blockHashRemote} = await providerRemote.getBlock(blockNumber);
 
   if (blockHashRemote !== blockHashLocal) {
     console.log('Fork: Parity has forked...');
@@ -66,7 +123,7 @@ async function checkFork(providerLocal: ethers.providers.JsonRpcProvider, provid
 }
 
 
-async function getAnswerToFixIssue(answerText) {
+async function getAnswerToFixIssue(answerText: string) {
   const {answer} = await inquirer.prompt([
     {
       type: 'input',
