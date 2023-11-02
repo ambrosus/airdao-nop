@@ -30,46 +30,12 @@ async function check() {
 
     await checkSyncing(providerLocal);
     await checkFork(providerLocal, providerRemote);
-    const {url} = providerLocal.connection;
-    if (url) {
-      await checkURL(url);
-    } // TODO: ask if we need it
     await checkGitVersion();
 
     console.log('All Checks: passed');
     return false;
   } catch (err) {
     console.error('An error occurred:', err);
-  }
-}
-
-async function checkURL(url: string) {
-  try {
-    const nodeInfoResponse = await axios.get(`${url}/nodeinfo`);
-    const {reason, version} = nodeInfoResponse.data;
-
-    if (reason === 'Topology was destroyed') {
-      console.log('Topology: destroyed');
-      const answer = await getAnswerToFixIssue('Do you want to fix this issue? (y/n):');
-      if (answer) {
-        await execCmds([
-          'set -o xtrace',
-          'docker stop atlas_server atlas_worker mongod',
-          'docker start mongod atlas_worker atlas_server',
-          'set +o xtrace'
-        ]);
-      }
-    } else {
-      console.log('Topology: OK');
-    }
-
-    if (!version || version === 'null') {
-      console.log('URL: nodeinfo check failed');
-      return;
-    }
-    console.log('URL: OK');
-  } catch (error) {
-    console.error('Error:', error);
   }
 }
 
