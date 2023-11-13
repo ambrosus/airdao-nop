@@ -30,12 +30,12 @@ export default async function checkStatusInServerNodes(
   const contracts = new Contracts(signer, chainId);
   const validator = await Methods.getApolloInfo(contracts, address);
   if (validator.apollo.stake.isZero()) {
-    Dialog.notRegisteredDialog(network.domain);
+    Dialog.notRegisteredDialog(network.explorerUrl);
     return;
   }
 
   if (validator.isOnboarded) {
-    Dialog.alreadyOnboardedDialog(network.domain, address);
+    Dialog.alreadyOnboardedDialog(network.explorerUrl, address);
     return;
   }
 

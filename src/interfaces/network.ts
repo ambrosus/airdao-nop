@@ -10,7 +10,6 @@ export interface Network {
     domain: string;
     rpc: string;
     chainspec: string;
-    headContractAddress: string;
-    dockerTag: string;
+    explorerUrl: string;
     name: string;
 }
