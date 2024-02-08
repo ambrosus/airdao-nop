@@ -11,6 +11,8 @@ import { dockerGetLogs, execCmdSafe } from '../utils/exec';
 import axios from 'axios';
 import Dialog from '../dialogs/dialog_model';
 import { addressForPrivateKey } from "../utils/crypto";
+import { OUTPUT_DIRECTORY } from "../../config/config";
+import { ExecOptions } from "child_process";
 
 const TRANSFERSH_URL = 'https://transfer.ambrosus.io/';
 const NODE_CHECK_URL = 'https://node-check.ambrosus.io/';
@@ -26,9 +28,10 @@ async function sendLogsAction(): Promise<boolean> {
   const title = `${info.address}-${info.timestamp}`;
   const data = `
     Address: ${info.address}
-    Network: ${info.network}
+    Network: ${info.network.name}
     Timestamp: ${info.timestamp}
     
+    Network details: ${JSON.stringify(info.network, null, 2)}
     Working directory: ${info.cwd}
     OS Release: ${info.osRelease}
     Memory Info: ${info.memoryInfo}
@@ -51,14 +54,14 @@ async function collectDebugInfo() {
   const timestamp = Math.floor(Date.now() / 1000);
 
   const cwd = process.cwd();
-  const osRelease = await execCmdSafe('cat /etc/os-release');
-  const memoryInfo = await execCmdSafe('cat /proc/meminfo');
-  const directoryContents = await execCmdSafe('ls -la');
-  const outputDirectoryContents = await execCmdSafe('ls -la airdao-nop/output');
-  const diskBlockInfo = await execCmdSafe('df -h');
-  const diskInodesInfo = await execCmdSafe('df -i');
-  const processTree = await execCmdSafe('ps axjf');
-  const memoryUsage = await execCmdSafe('free -m');
+  const osRelease = await cmd('cat /etc/os-release');
+  const memoryInfo = await cmd('cat /proc/meminfo');
+  const directoryContents = await cmd('ls -la');
+  const outputDirectoryContents = await cmd('ls -la', {cwd: OUTPUT_DIRECTORY});
+  const diskBlockInfo = await cmd('df -h');
+  const diskInodesInfo = await cmd('df -i');
+  const processTree = await cmd('ps axjf');
+  const memoryUsage = await cmd('free -m');
   const composeLogs = await dockerGetLogsSafe();
 
   return {
@@ -93,7 +96,7 @@ async function dockerGetLogsSafe() {
   try {
     return await dockerGetLogs();
   } catch (error) {
-    return `\n\nError while changing directory or fetching compose logs: ${error.message}`;
+    return `Error while changing directory or fetching compose logs: ${error.message}`;
   }
 }
 
@@ -102,18 +105,26 @@ async function dockerGetLogsSafe() {
 async function promptUserToSendDebugFiles(): Promise<boolean> {
   console.log(
     `The information being sent is the following:
-    \n* Current working directory
-    \n* OS Release
-    \n* Memory Info
-    \n* Directory Contents
-    \n* Output Directory Contents
-    \n* Disk Block Info
-    \n* Disk Inodes Info
-    \n* Process Tree
-    \n* Memory Usage`
+    * Current working directory
+    * OS Release
+    * Memory Info
+    * Directory Contents
+    * Output Directory Contents
+    * Disk Block Info
+    * Disk Inodes Info
+    * Process Tree
+    * Memory Usage`
   );
 
-  return await Dialog.askYesOrNo('Do you want to proceed?');
+  return await Dialog.askYesOrNo('Do you want to proceed?', true);
+}
+
+async function cmd(cmd: string, options?: ExecOptions) {
+  const {stdout, stderr} = await execCmdSafe(cmd, options);
+  let result = stdout;
+  if (stderr)
+    result += `\t[err: ${stderr}]`;
+  return result;
 }
 
 export default sendLogsAction;

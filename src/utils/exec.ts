@@ -57,9 +57,9 @@ export async function execCmd(cmd, options?: ExecOptions): Promise<any> {
   });
 }
 
-export async function execCmdSafe(cmd) {
+export async function execCmdSafe(cmd, options?: ExecOptions) {
   try {
-    return await execCmd(cmd);
+    return await execCmd(cmd, options);
   } catch (error) {
     return `\n\nError while executing ${cmd}: ${error.message}`;
   }

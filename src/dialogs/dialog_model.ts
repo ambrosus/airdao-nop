@@ -160,12 +160,12 @@ class Dialog {
   notRegisteredDialog = (explorerUrl) =>
     this.output(chalk.red(messages.notRegisteredNode(explorerUrl)));
 
-  async askYesOrNo(message: string) {
+  async askYesOrNo(message: string, default_: boolean = false) {
     const answers = await inquirer.prompt([{
       type: 'confirm',
       name: 'yesOrNo',
       message: message,
-      default: false
+      default: default_,
     }])
     return answers.yesOrNo;
   }

@@ -15,12 +15,13 @@ import path from 'path';
 import Dialog from '../dialogs/dialog_model';
 
 async function resetAction() {
-  const newFileName = `state.json.backup.${Date.now()}`;
+  const newFileName = `state.json.backup.${getDate()}`;
 
   const answer = await Dialog.askYesOrNo(`Are you sure you want to reset your setup?
-  Your node will shut down, and file with your current settings will be backed up. (${STATE_PATH} -> ${newFileName}.
+  Your node will shut down, and file with your current settings will be backed up. 
+    (${STATE_PATH} -> ${newFileName}.
   You can restore your settings by renaming the file back to state.json.
-  After that, you can setup the node again. Continue? 
+  After that, you can setup the node again.   Continue? 
   `);
 
   if (!answer)
@@ -35,6 +36,11 @@ async function renameStateFile(newFileName: string) {
   const directory = path.dirname(STATE_PATH);
   const newFilePath = path.join(directory, newFileName);
   await fs.rename(STATE_PATH, newFilePath);
+}
+
+
+function getDate() {
+  return new Date().toISOString().split('T')[0]
 }
 
 export default resetAction;
