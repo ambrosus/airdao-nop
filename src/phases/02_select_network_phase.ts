@@ -8,17 +8,19 @@ This Source Code Form is “Incompatible With Secondary Licenses”, as defined 
 */
 
 import Dialog from '../dialogs/dialog_model';
-import {Network} from '../interfaces/network';
+import { Network } from '../interfaces/network';
 
 
-const selectNetworkPhase = async (storedNetwork, availableNetworks) => {
+type Networks = { [key: string]: Network };
+
+const selectNetworkPhase = async (storedNetwork: Network, availableNetworks: Networks) => {
   const selectedNetwork = await selectNetwork(storedNetwork, availableNetworks);
   Dialog.networkSelectedDialog(selectedNetwork.name);
   return selectedNetwork as Network;
 };
 
 
-const selectNetwork = async (storedNetwork, availableNetworks) => {
+const selectNetwork = async (storedNetwork: Network, availableNetworks: Networks) => {
   if (storedNetwork) {
     if (!hasNetworkChanged(storedNetwork, availableNetworks[storedNetwork.name])) {
       return storedNetwork;
@@ -34,22 +36,22 @@ const selectNetwork = async (storedNetwork, availableNetworks) => {
 };
 
 
-async function askForNetwork(availableNetworks) {
+async function askForNetwork(availableNetworks: Networks) {
   const availableNetworksNames = Object.keys(availableNetworks);
 
-  if (availableNetworksNames.length === 0) {
+  if (availableNetworksNames.length === 0)
     throw new Error('No networks are defined');
-  }
-  if (availableNetworksNames.length === 1) {
-    return availableNetworksNames[0];
-  }
+
+  if (availableNetworksNames.length === 1)
+    return availableNetworks[availableNetworksNames[0]];
 
   const answers = await Dialog.askForNetworkDialog(availableNetworksNames);
   return availableNetworks[answers.network];
 }
 
-const hasNetworkChanged = (storedNetwork, availableNetwork) => !availableNetwork || Object.entries(availableNetwork)
-  .some(([key, value]) => storedNetwork[key] !== value);
+const hasNetworkChanged = (storedNetwork: Network, availableNetwork: Network) =>
+  !availableNetwork ||
+  Object.entries(availableNetwork).some(([key, value]) => storedNetwork[key] !== value);
 
 
 export default selectNetworkPhase;

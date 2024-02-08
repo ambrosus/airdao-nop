@@ -14,34 +14,30 @@ import selectNetworkPhase from './phases/02_select_network_phase';
 import getPrivateKeyPhase from './phases/03_get_private_key_phase';
 import getNodeIPPhase from './phases/04_get_node_ip_phase';
 import {readState, writeState} from './utils/state';
-import setup from './setup';
+import setupNodeConfigFiles from './setup';
 import runDockerPhase from './phases/05_run_docker';
 import checkStatusInServerNodes from './phases/06_check_status_in_server_nodes';
 import {selectActionPhase} from './phases/07_select_action_phase';
+import { EXPLORER_URLS } from "../config/config";
 
-const explorerUrls = {
-  main: 'https://airdao.io/explorer/',
-  dev: 'https://devnet.airdao.io/explorer/',
-  test: 'https://testnet.airdao.io/explorer/'
-};
+
 
 export const start = async () => {
   Dialog.logoDialog();
 
-  if (!(await checkDockerAvailablePhase())) {
+  if (!(await checkDockerAvailablePhase()))
     return;
-  }
 
   const state = await readState();
 
   state.network = await selectNetworkPhase(state.network, networks);
   state.privateKey = await getPrivateKeyPhase(state.privateKey);
   state.ip = await getNodeIPPhase(state.ip);
-  state.explorerUrl = explorerUrls[state.network.name] || explorerUrls.dev;
+  state.explorerUrl = EXPLORER_URLS[state.network.name] || EXPLORER_URLS.main;
 
   await writeState(state);
 
-  await setup(state);
+  await setupNodeConfigFiles(state);
   Dialog.setupCompleteDialog();
 
   await runDockerPhase();

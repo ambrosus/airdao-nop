@@ -10,14 +10,12 @@ This Source Code Form is “Incompatible With Secondary Licenses”, as defined 
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import messages from './messages';
-import {isValidIP, isValidPrivateKey} from '../utils/validations';
+import { isValidIP, isValidPrivateKey } from '../utils/validations';
 
 class Dialog {
   output = (data: string) => console.log(data);
 
-  logoDialog() {
-    this.output(
-      chalk.blue(`
+  logoDialog = () => this.output(chalk.blue(`
                    ,lc,..                                                      
                     'cx0K0xoc,..                                                
                        .;o0WMWX0xoc,..                                          
@@ -39,22 +37,24 @@ class Dialog {
    00  x00     1x1   10       001  1x1        1x1   00  x00     10        101 
   000xxxx000   1x1   1O0xxxx001    1x1        1x1  000xxxx000   101        01
  000      000  1x1   10     1111   1x100000001x   000      000   '100000001'
-`)
-    );
-  }
+`));
+
 
   dockerDetectedDialog = () =>
     this.output(chalk.green(messages.dockerInstalledInfo));
+
   dockerMissingDialog = () =>
     this.output(chalk.red(messages.dockerMissingInfo));
-  insufficientFundsDialog = () =>
-    this.output(chalk.red(messages.insufficientFunds));
+
   genericErrorDialog = (message) =>
     this.output(chalk.red(messages.genericError(message)));
+
   networkSelectedDialog = (network) =>
     this.output(chalk.green(messages.networkSelected(chalk.yellow(network))));
+
   nodeIPDetectedDialog = (nodeUrl) =>
     this.output(chalk.green(messages.nodeIPInfo(chalk.yellow(nodeUrl))));
+
   privateKeyDetectedDialog = (address) =>
     this.output(chalk.green(messages.privateKeyInfo(chalk.yellow(address))));
 
@@ -134,6 +134,7 @@ class Dialog {
 
   setupCompleteDialog = () =>
     this.output(chalk.blue(messages.dockerSetupComplete));
+
   dockerStartingDialog = () => this.output(chalk.blue(messages.dockerStarting));
   dockerStartedDialog = () => this.output(chalk.green(messages.dockerStarted));
   dockerErrorDialog = () => this.output(chalk.red(messages.dockerError));
@@ -157,8 +158,9 @@ class Dialog {
     this.output(
       chalk.green(messages.alreadyOnboarded(explorerUrl, nodeAddress))
     );
-  notOnboardedDialog = () => this.output(chalk.red(messages.notOnboarded));
-  waitOnboardingDialog = (days, hours, minutes) =>
+
+  waitOnboardingDialog = (timeToWait: number) => {
+    const { days, hours, minutes } = splitTime(timeToWait);
     this.output(
       chalk.yellow(
         messages.waitOnboarding(
@@ -168,8 +170,29 @@ class Dialog {
         )
       )
     );
+  }
+
   notRegisteredDialog = (explorerUrl) =>
     this.output(chalk.red(messages.notRegisteredNode(explorerUrl)));
+
+  async askYesOrNo(message: string) {
+    const answers = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'yesOrNo',
+      message: message,
+      default: false
+    }])
+    return answers.yesOrNo;
+  }
+
+}
+
+
+function splitTime(time: number) {
+  const days = Math.floor(time / (3600 * 24));
+  const hours = Math.floor((time % (3600 * 24)) / 3600);
+  const minutes = Math.floor((time % 3600) / 60);
+  return { days, hours, minutes };
 }
 
 export default new Dialog();

@@ -7,9 +7,8 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
 
-/**
- * @returns {function(): boolean} returns true when we want to quit the NOP
- */
-const quitAction = (): boolean => true;
+async function quitAction() {
+  process.exit(0);
+}
 
 export default quitAction;

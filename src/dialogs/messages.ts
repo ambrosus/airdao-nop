@@ -46,11 +46,10 @@ const messages = {
   notRegisteredNode: (explorerUrl) =>
     `Your node is not registered in the network. Register here: https://${explorerUrl}/explorer/node-setup/`,
   actions: {
-    resetup: '🔄 Resetup node',
-    logs: '📁 Send logs to server',
-    check: '🔍 Check if NOP version is actual',
-    update: '🚀 Update nop version',
-    quit: '👋 Finish NOP'
+    reset: '🔄 Reset node settings (private key, chainid, etc)',
+    logs: '📁 Send debug information to AirDao support team',
+    check: '🔍 Try to find and fix issues with your node setup',
+    quit: '👋 Quit NOP'
   },
   selectActionQuestion: 'You can now perform one of the following actions'
 };

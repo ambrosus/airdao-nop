@@ -8,14 +8,14 @@ This Source Code Form is “Incompatible With Secondary Licenses”, as defined 
 */
 import quitAction from './quit_action';
 import sendLogsAction from './send_logs_action';
-import check from './check_version_action';
+import check from './fix_issues_action';
 import updateVersionAction from './update_version_action';
-import resetupAction from './resetup_action';
+import resetAction from './reset_action';
 
 export {
   quitAction,
   sendLogsAction,
   check,
   updateVersionAction,
-  resetupAction
+  resetAction
 };

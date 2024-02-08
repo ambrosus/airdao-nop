@@ -12,9 +12,9 @@ import {
   ContractNames
 } from '@airdao/airdao-node-contracts';
 import Dialog from '../dialogs/dialog_model';
-import {ethers} from 'ethers';
-import {Network} from '../interfaces/network';
-import Crypto from '../utils/crypto';
+import { ethers } from 'ethers';
+import { Network } from '../interfaces/network';
+import { addressForPrivateKey } from "../utils/crypto";
 
 export default async function checkStatusInServerNodes(
   privateKey: string,
@@ -25,35 +25,29 @@ export default async function checkStatusInServerNodes(
   const provider = new ethers.providers.JsonRpcProvider(network.rpc);
 
   const signer = new ethers.VoidSigner(ethers.constants.AddressZero, provider);
-  const {chainId} = await provider.getNetwork();
+  const { chainId } = await provider.getNetwork();
 
-  const address = Crypto.addressForPrivateKey(privateKey);
+  const address = addressForPrivateKey(privateKey);
 
   const contracts = new Contracts(signer, chainId);
-  const validator = await Methods.getApolloInfo(contracts, address);
-  if (!validator) {
+  const apolloInfo = await Methods.getApolloInfo(contracts, address);
+  if (!apolloInfo) {
     Dialog.notRegisteredDialog(explorerUrl);
     return;
   }
 
-  if (validator.isOnboarded) {
+  if (apolloInfo.isOnboarded) {
     Dialog.alreadyOnboardedDialog(explorerUrl, address);
-    return;
-  } else if (!validator.isOnboarded) {
-    const contract = contracts.getContractByName(
-      ContractNames.ServerNodesManager
-    );
-    const onboardingDelay = (await contract.onboardingDelay()).toNumber();
-    const timeToWait =
-      onboardingDelay -
-      (currentTimeInSeconds - validator.apollo.timestampStake.toNumber());
-
-    const days = Math.floor(timeToWait / (3600 * 24));
-    const hours = Math.floor((timeToWait % (3600 * 24)) / 3600);
-    const minutes = Math.floor((timeToWait % 3600) / 60);
-    Dialog.waitOnboardingDialog(days, hours, minutes);
     return;
   }
 
-  return true;
+  const contract = contracts.getContractByName(ContractNames.ServerNodesManager);
+  const onboardingDelay = (await contract.onboardingDelay()).toNumber();
+  const stakeTimestamp = apolloInfo.apollo.timestampStake.toNumber()
+
+  const timeToWait = stakeTimestamp + onboardingDelay - currentTimeInSeconds;
+
+  Dialog.waitOnboardingDialog(timeToWait);
+
 }
+

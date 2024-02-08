@@ -11,39 +11,26 @@ import messages from '../dialogs/messages';
 import {
   check,
   quitAction,
-  resetupAction,
+  resetAction,
   sendLogsAction,
   updateVersionAction
 } from '../menu_actions';
 
-export const defaultActions = {
-  [messages.actions.resetup]: resetupAction,
+export const ACTIONS = {
+  [messages.actions.reset]: resetAction,
   [messages.actions.logs]: sendLogsAction,
   [messages.actions.check]: check,
-  [messages.actions.update]: updateVersionAction,
   [messages.actions.quit]: quitAction
 };
 
-export const selectActionPhase = async (actions = defaultActions) => {
-  let shouldQuit = false;
-  const actionsKeys = [];
-  for (const action in actions) {
-    actionsKeys.push(action);
-  }
-  while (!shouldQuit) {
-    const {action: selectedAction} = await Dialog.selectActionDialog(
-      actionsKeys
-    );
+export async function selectActionPhase() {
+  while (true) {
+    const { action: selectedAction } = await Dialog.selectActionDialog(Object.keys(ACTIONS));
+
     try {
-      shouldQuit = await actions[selectedAction]();
+      await ACTIONS[selectedAction]();
     } catch (err) {
-      if (err.message.includes('Insufficient funds')) {
-        Dialog.insufficientFundsDialog();
-        return;
-      }
       Dialog.genericErrorDialog(err.message);
-      return;
     }
   }
-  return;
-};
+}
