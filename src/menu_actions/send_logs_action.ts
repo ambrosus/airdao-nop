@@ -6,9 +6,8 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
-import inquirer from 'inquirer';
-import {readState} from '../utils/state';
-import { dockerGetLogs, execCmd, execCmdSafe } from '../utils/exec';
+import { readState } from '../utils/state';
+import { dockerGetLogs, execCmdSafe } from '../utils/exec';
 import axios from 'axios';
 import Dialog from '../dialogs/dialog_model';
 

@@ -13,7 +13,6 @@ import {
   quitAction,
   resetAction,
   sendLogsAction,
-  updateVersionAction
 } from '../menu_actions';
 
 export const ACTIONS = {
