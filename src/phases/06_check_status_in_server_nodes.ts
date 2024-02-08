@@ -30,7 +30,15 @@ export default async function checkStatusInServerNodes(
   const address = addressForPrivateKey(privateKey);
 
   const contracts = new Contracts(signer, chainId);
-  const apolloInfo = await Methods.getApolloInfo(contracts, address);
+
+  let apolloInfo;
+  try {
+    apolloInfo = await Methods.getApolloInfo(contracts, address);
+  } catch (e) {
+    Dialog.genericErrorDialog("can't fetch info about your node");
+    return;
+  }
+
   if (!apolloInfo) {
     Dialog.notRegisteredDialog(explorerUrl);
     return;
