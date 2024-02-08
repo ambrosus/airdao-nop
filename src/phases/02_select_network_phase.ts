@@ -21,17 +21,8 @@ const selectNetworkPhase = async (storedNetwork: Network, availableNetworks: Net
 
 
 const selectNetwork = async (storedNetwork: Network, availableNetworks: Networks) => {
-  if (storedNetwork) {
-    if (!hasNetworkChanged(storedNetwork, availableNetworks[storedNetwork.name])) {
-      return storedNetwork;
-    }
-
-    if (availableNetworks[storedNetwork.name]) {
-      Dialog.dockerRestartRequiredDialog();
+  if (storedNetwork)
       return availableNetworks[storedNetwork.name];
-    }
-  }
-
   return await askForNetwork(availableNetworks);
 };
 
@@ -48,10 +39,5 @@ async function askForNetwork(availableNetworks: Networks) {
   const answers = await Dialog.askForNetworkDialog(availableNetworksNames);
   return availableNetworks[answers.network];
 }
-
-const hasNetworkChanged = (storedNetwork: Network, availableNetwork: Network) =>
-  !availableNetwork ||
-  Object.entries(availableNetwork).some(([key, value]) => storedNetwork[key] !== value);
-
 
 export default selectNetworkPhase;

@@ -139,21 +139,6 @@ class Dialog {
   dockerStartedDialog = () => this.output(chalk.green(messages.dockerStarted));
   dockerErrorDialog = () => this.output(chalk.red(messages.dockerError));
 
-  dockerRestartRequiredDialog() {
-    const center = (text, consoleWidth) =>
-      text.padStart(consoleWidth / 2 + text.length / 2);
-    const consoleWidth = process.stdout.columns;
-    this.output(chalk.yellow('='.repeat(consoleWidth)));
-    this.output(chalk.yellow(center(messages.warningMessage, consoleWidth)));
-    this.output(
-      chalk.yellow(center(messages.dockerRestartRequired, consoleWidth))
-    );
-    this.output(
-      chalk.yellow(center(messages.dockerComposeCommand, consoleWidth))
-    );
-    this.output(chalk.yellow('='.repeat(consoleWidth)));
-  }
-
   alreadyOnboardedDialog = (explorerUrl, nodeAddress) =>
     this.output(
       chalk.green(messages.alreadyOnboarded(explorerUrl, nodeAddress))

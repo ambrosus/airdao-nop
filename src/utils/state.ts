@@ -20,7 +20,6 @@ export async function readState(): Promise<State> {
     return {
       network: null,
       privateKey: null,
-      address: null,
       ip: null,
       explorerUrl: null
     };

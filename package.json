@@ -18,6 +18,7 @@
     "@airdao/airdao-node-contracts": "1.1.7",
     "@types/inquirer": "^9.0.4",
     "@types/js-yaml": "^4.0.9",
+    "js-yaml": "^4.0.9",
     "axios": "^1.4.0",
     "base64url": "^3.0.1",
     "chalk": "^4.1.1",

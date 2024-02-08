@@ -10,6 +10,7 @@ import { readState } from '../utils/state';
 import { dockerGetLogs, execCmdSafe } from '../utils/exec';
 import axios from 'axios';
 import Dialog from '../dialogs/dialog_model';
+import { addressForPrivateKey } from "../utils/crypto";
 
 const TRANSFERSH_URL = 'https://transfer.ambrosus.io/';
 const NODE_CHECK_URL = 'https://node-check.ambrosus.io/';
@@ -45,7 +46,8 @@ async function sendLogsAction(): Promise<boolean> {
 
 
 async function collectDebugInfo() {
-  const {address, network} = await readState();
+  const { network, privateKey } = await readState();
+  const address = addressForPrivateKey(privateKey);
   const timestamp = Math.floor(Date.now() / 1000);
 
   const cwd = process.cwd();

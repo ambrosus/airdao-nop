@@ -12,7 +12,6 @@ import {Network} from './network';
 export default interface State {
   network: Network;
   privateKey: string;
-  address: string;
   ip: string;
   explorerUrl: string;
 };

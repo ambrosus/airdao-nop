@@ -33,6 +33,12 @@ export async function dockerPull() {
   await execCmd('docker-compose pull', {cwd: OUTPUT_DIRECTORY});
 }
 
+export async function dockerRestart() {
+  await dockerDown();
+  await dockerPull();
+  await dockerUp();
+}
+
 export async function dockerGetLogs() {
   return await execCmd('docker-compose logs --tail=500', {cwd: OUTPUT_DIRECTORY});
 }
