@@ -39,12 +39,12 @@ const messages = {
   dockerRestartRequired:
     'Changes in network have been detected. Please restart the docker containers with',
   alreadyOnboarded: (explorerUrl, nodeAddress) =>
-    `Node registered and onboarded to the network🎉. You can check it here: https://${explorerUrl}/explorer/apollo/${nodeAddress}`,
+    `Node registered and onboarded to the network🎉. You can check it here: ${explorerUrl}apollo/${nodeAddress}`,
   notOnboarded: 'Your node is not onboarded to the network',
   waitOnboarding: (days, hours, minutes) =>
     `Please wait until your node is onboarded to the network, Left: ${days}d ${hours}h ${minutes}m`,
   notRegisteredNode: (explorerUrl) =>
-    `Your node is not registered in the network. Register here: https://${explorerUrl}/explorer/node-setup/`,
+    `Your node is not registered in the network. Register here: ${explorerUrl}node-setup/`,
   actions: {
     reset: '🔄 Reset node settings (private key, chainid, etc)',
     logs: '📁 Send debug information to AirDao support team',
