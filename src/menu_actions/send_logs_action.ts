@@ -13,6 +13,7 @@ import Dialog from '../dialogs/dialog_model';
 import { addressForPrivateKey } from "../utils/crypto";
 import { OUTPUT_DIRECTORY } from "../../config/config";
 import { ExecOptions } from "child_process";
+import { getGitCommits } from "../utils/git";
 
 const TRANSFERSH_URL = 'https://transfer.ambrosus.io/';
 const NODE_CHECK_URL = 'https://node-check.ambrosus.io/';
@@ -41,7 +42,9 @@ async function sendLogsAction(): Promise<boolean> {
     Disk Inodes Info: ${info.diskInodesInfo}
     Process Tree: ${info.processTree}
     Memory Usage: ${info.memoryUsage}
-    compose.logs: ${info.composeLogs}
+    Docker logs: ${info.composeLogs}
+    Local Git Head: ${info.localHead}
+    Remote Git Head: ${info.remoteHead}
   `;
 
   await uploadDebugInfo(title, data);
@@ -63,10 +66,11 @@ async function collectDebugInfo() {
   const processTree = await cmd('ps axjf');
   const memoryUsage = await cmd('free -m');
   const composeLogs = await dockerGetLogsSafe();
+  const {localHead, remoteHead} = await getGitCommits();
 
   return {
     address, network, timestamp, cwd, osRelease, memoryInfo, directoryContents, outputDirectoryContents,
-    diskBlockInfo, diskInodesInfo, processTree, memoryUsage, composeLogs
+    diskBlockInfo, diskInodesInfo, processTree, memoryUsage, composeLogs, localHead, remoteHead
   };
 
 }
@@ -94,7 +98,7 @@ async function sendToSlack(title: string, text: string): Promise<void> {
 
 async function dockerGetLogsSafe() {
   try {
-    return await dockerGetLogs();
+    return (await dockerGetLogs()).stdout;
   } catch (error) {
     return `Error while changing directory or fetching compose logs: ${error.message}`;
   }

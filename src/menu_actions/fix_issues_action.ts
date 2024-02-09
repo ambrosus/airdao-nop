@@ -13,21 +13,18 @@ import { ethers } from 'ethers';
 import * as fs from 'fs/promises';
 import { OUTPUT_DIRECTORY } from '../../config/config';
 import path from 'path';
+import { getGitCommits } from "../utils/git";
 
 
 const RPC_LOCAL = 'http://127.0.0.1:8545';
 
 async function check() {
   const state = await readState();
-  const environment = state.network.name;
-
-  const rpcSuffix = { dev: '-dev', test: '-test' }[environment] || '';
-  const rpcRemote = `https://network.ambrosus${rpcSuffix}.io`;
 
   console.log('Checking...');
 
   const providerLocal = new ethers.providers.JsonRpcProvider(RPC_LOCAL);
-  const providerRemote = new ethers.providers.JsonRpcProvider(rpcRemote);
+  const providerRemote = new ethers.providers.JsonRpcProvider(state.network.rpc);
 
   await checkSyncing(providerLocal);
   await checkFork(providerLocal, providerRemote);
@@ -48,14 +45,14 @@ async function checkSyncing(provider: ethers.providers.JsonRpcProvider) {
 }
 
 async function checkGitVersion() {
-  const pullResult = await execCmd('git pull --quiet origin master');
-
-  if (!pullResult) {
-    console.log('Version: OK');
+  const {localHead, remoteHead} = await getGitCommits();
+  if (localHead === remoteHead) {
+    console.log('Git version: OK');
     return;
   }
 
-  console.log('Version: old version detected');
+  console.log('Git version: old version detected!');
+  console.log('Local:', localHead, 'Remote:', remoteHead);
   const shouldFix = await Dialog.askYesOrNo('Do you want to fix this issue? (y/n):');
   if (shouldFix)
     await fixVersionIssue()
