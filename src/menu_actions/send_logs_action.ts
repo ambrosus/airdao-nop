@@ -47,6 +47,7 @@ async function sendLogsAction(): Promise<boolean> {
   `;
 
   await uploadDebugInfo(title, data);
+  console.log(`Debug info successfully sent to AirDao support team! ID: ${title}`);
 }
 
 
@@ -76,7 +77,7 @@ async function collectDebugInfo() {
 
 async function uploadDebugInfo(title: string, data: string): Promise<void> {
   const response = await axios.post(DISCORD_WEBHOOK_URL, {
-    message: "Logs",
+    message: `Logs ${title}`,
     fileName: `${title}.txt`,
     fileContent: data
   });
