@@ -16,7 +16,7 @@ import { ExecOptions } from "child_process";
 import { getGitCommits } from "../utils/git";
 
 const TRANSFERSH_URL = 'https://transfer.ambrosus.io/';
-const NODE_CHECK_URL = 'https://node-check.ambrosus.io/';
+const DISCORD_WEBHOOK_URL = 'https://qsymqgy36zfeiifil647clfy7a0lcrfe.lambda-url.eu-central-1.on.aws/';
 
 
 async function sendLogsAction(): Promise<boolean> {
@@ -77,9 +77,7 @@ async function collectDebugInfo() {
 
 async function uploadDebugInfo(title: string, data: string): Promise<void> {
   const uploadedInfoUrl = await uploadToTransferSh(`${title}-debug.txt`, data);
-  console.log(uploadedInfoUrl)
-  await sendToSlack(title, uploadedInfoUrl);
-
+  await sendToDiscord(uploadedInfoUrl);
 }
 
 async function uploadToTransferSh(title: string, data: string): Promise<string> {
@@ -89,8 +87,8 @@ async function uploadToTransferSh(title: string, data: string): Promise<string> 
   return response.data;
 }
 
-async function sendToSlack(title: string, text: string): Promise<void> {
-  const response = await axios.post(NODE_CHECK_URL, {attachments: [{title, text}]});
+async function sendToDiscord(text: string): Promise<void> {
+  const response = await axios.post(DISCORD_WEBHOOK_URL, {logsUrl: text});
   if (response.status !== 200)
     throw new Error(`Failed to send debug info: ${response.data}`);
 }
