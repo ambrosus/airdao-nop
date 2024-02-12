@@ -15,7 +15,6 @@ import { OUTPUT_DIRECTORY } from "../../config/config";
 import { ExecOptions } from "child_process";
 import { getGitCommits } from "../utils/git";
 
-const TRANSFERSH_URL = 'https://transfer.ambrosus.io/';
 const DISCORD_WEBHOOK_URL = 'https://qsymqgy36zfeiifil647clfy7a0lcrfe.lambda-url.eu-central-1.on.aws/';
 
 
@@ -76,19 +75,11 @@ async function collectDebugInfo() {
 }
 
 async function uploadDebugInfo(title: string, data: string): Promise<void> {
-  const uploadedInfoUrl = await uploadToTransferSh(`${title}-debug.txt`, data);
-  await sendToDiscord(uploadedInfoUrl);
-}
-
-async function uploadToTransferSh(title: string, data: string): Promise<string> {
-  const response = await axios.put(TRANSFERSH_URL + title, data);
-  if (response.status !== 200)
-    throw new Error(`Failed to upload debug info: ${response.data}`);
-  return response.data;
-}
-
-async function sendToDiscord(text: string): Promise<void> {
-  const response = await axios.post(DISCORD_WEBHOOK_URL, {logsUrl: text});
+  const response = await axios.post(DISCORD_WEBHOOK_URL, {
+    message: "Logs",
+    fileName: `${title}.txt`,
+    fileContent: data
+  });
   if (response.status !== 200)
     throw new Error(`Failed to send debug info: ${response.data}`);
 }
