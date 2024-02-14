@@ -21,11 +21,31 @@ export async function isDockerAvailable() {
   }
 }
 
-export async function runDocker() {
+export async function dockerUp() {
   await execCmd('docker-compose up -d', {cwd: OUTPUT_DIRECTORY});
 }
 
-async function execCmd(cmd, options?: ExecOptions): Promise<any> {
+export async function dockerDown() {
+  await execCmd('docker-compose down', {cwd: OUTPUT_DIRECTORY});
+}
+
+export async function dockerPull() {
+  await execCmd('docker-compose pull', {cwd: OUTPUT_DIRECTORY});
+}
+
+export async function dockerRestart() {
+  await dockerDown();
+  await dockerPull();
+  await dockerUp();
+}
+
+export async function dockerGetLogs() {
+  return await execCmd('docker-compose logs --tail=500', {cwd: OUTPUT_DIRECTORY});
+}
+
+
+
+export async function execCmd(cmd, options?: ExecOptions): Promise<any> {
   return new Promise((resolve, reject) => {
     exec(cmd, options, (err, stdout, stderr) => {
       if (err === null) {
@@ -35,4 +55,12 @@ async function execCmd(cmd, options?: ExecOptions): Promise<any> {
       }
     });
   });
+}
+
+export async function execCmdSafe(cmd, options?: ExecOptions) {
+  try {
+    return await execCmd(cmd, options);
+  } catch (error) {
+    return `\n\nError while executing ${cmd}: ${error.message}`;
+  }
 }

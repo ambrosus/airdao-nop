@@ -8,32 +8,31 @@ This Source Code Form is “Incompatible With Secondary Licenses”, as defined 
 */
 
 import Dialog from '../dialogs/dialog_model';
-import Crypto from '../utils/crypto';
+import { addressForPrivateKey, generatePrivateKey } from "../utils/crypto";
 
-
-const getPrivateKeyPhase = async (storedPrivateKey) => {
+const getPrivateKeyPhase = async (storedPrivateKey: string) => {
   const privateKey = await getPrivateKey(storedPrivateKey);
 
-  const address = Crypto.addressForPrivateKey(privateKey);
+  const address = addressForPrivateKey(privateKey);
   Dialog.privateKeyDetectedDialog(address);
 
   return privateKey;
 };
 
 
-const getPrivateKey = async (storedPrivateKey) => {
-  if (storedPrivateKey !== null) {
+const getPrivateKey = async (storedPrivateKey: string) => {
+  if (storedPrivateKey !== null)
     return storedPrivateKey;
-  }
+
 
   const answers = await Dialog.askForPrivateKeyDialog();
 
-  if (answers.source === 'manual') {
+  if (answers.source === 'manual')
     return answers.privateKey;
-  }
-  if (answers.source === 'generate') {
-    return Crypto.generatePrivateKey();
-  }
+
+  if (answers.source === 'generate')
+    return generatePrivateKey();
+
   throw new Error('Unexpected source');
 };
 

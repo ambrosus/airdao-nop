@@ -6,12 +6,14 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
+import quitAction from './quit_action';
+import sendLogsAction from './send_logs_action';
+import check from './fix_issues_action';
+import resetAction from './reset_action';
 
-import {Network} from './network';
-
-export default interface State {
-  network: Network;
-  privateKey: string;
-  ip: string;
-  explorerUrl: string;
+export {
+  quitAction,
+  sendLogsAction,
+  check,
+  resetAction
 };
