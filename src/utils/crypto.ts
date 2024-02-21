@@ -7,30 +7,23 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
 
-import Web3 from 'web3';
+import { ethers } from "ethers";
 
-class Crypto {
-  public web3: Web3;
 
-  constructor() {
-    this.web3 = new Web3();
-  }
-
-  generatePrivateKey() {
-    return this.web3.eth.accounts.create().privateKey;
-  }
-
-  addressForPrivateKey(privateKey) {
-    return this.web3.eth.accounts.privateKeyToAccount(privateKey).address;
-  }
-
-  getEncryptedWallet(privateKey, password) {
-    return this.web3.eth.accounts.encrypt(privateKey, password);
-  }
-
-  getRandomPassword() {
-    return this.web3.utils.randomHex(32);
-  }
+export function generatePrivateKey() {
+  return ethers.Wallet.createRandom().privateKey;
 }
 
-export default new Crypto();
+export function addressForPrivateKey(privateKey: string) {
+  return new ethers.Wallet(privateKey).address;
+}
+
+export async function getEncryptedWallet(privateKey: string, password: string) {
+  const wallet = new ethers.Wallet(privateKey);
+  return wallet.encrypt(password);
+}
+
+export function getRandomPassword() {
+  return ethers.utils.hexlify(ethers.utils.randomBytes(32));
+}
+

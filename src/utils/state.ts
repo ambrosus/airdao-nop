@@ -12,17 +12,16 @@ import State from '../interfaces/state';
 import {readFile, writeFile} from 'fs/promises';
 import {ensureDirectoryForFileExists} from './file';
 
-
 export async function readState(): Promise<State> {
   try {
     const file = readFile(STATE_PATH, {encoding: 'utf8'});
     return JSON.parse(await file);
-  } catch (e) {
+  } catch (err) {
     return {
       network: null,
       privateKey: null,
-      address: null,
-      ip: null
+      ip: null,
+      explorerUrl: null
     };
   }
 }

@@ -7,30 +7,28 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
 
-import Crypto from './utils/crypto';
-import path from 'path';
 import jsyaml from 'js-yaml';
-import {readFile, writeFile} from 'fs/promises';
-import {fileDownload} from './utils/http_utils';
+import { readFile, writeFile } from 'fs/promises';
+import { fileDownload } from './utils/http_utils';
 import {
-  CHAIN_DESCRIPTION_FILE_NAME,
-  DOCKER_FILE_NAME,
-  KEY_FILE_NAME,
+  CHAIN_DESCRIPTION_PATH,
+  DOCKER_COMPOSE_PATH,
+  dockerFileTemplatePath,
+  KEY_PATH,
   OUTPUT_DIRECTORY,
-  PARITY_CONFIG_FILE_NAME,
-  PASSWORD_FILE_NAME,
-  TEMPLATE_DIRECTORY
+  PARITY_CONFIG_PATH,
+  parityConfigTemplatePath,
+  PASSWORD_PATH
 } from '../config/config';
 import State from './interfaces/state';
-import {ensureDirectoryExists} from './utils/file';
+import { ensureDirectoryExists } from './utils/file';
+import { addressForPrivateKey, getEncryptedWallet, getRandomPassword } from "./utils/crypto";
 
 
-const APOLLO = 'apollo';
-
-export default async function setup(state: State) {
+export default async function setupNodeConfigFiles(state: State) {
   await ensureDirectoryExists(OUTPUT_DIRECTORY);
 
-  const address = Crypto.addressForPrivateKey(state.privateKey);
+  const address = addressForPrivateKey(state.privateKey);
   const networkName = await fetchChainJson(state.network.chainspec);
 
   const {dockerTemplate, parityTemplate} = await readTemplates(networkName);
@@ -39,60 +37,49 @@ export default async function setup(state: State) {
   await createParityConfigFile(parityTemplate, address, state.ip, extraData);
   await createDockerComposeFile(dockerTemplate, address, networkName, state.network.domain);
 
-  const password = Crypto.getRandomPassword();
-  await createPasswordFile(password);
+  const password = getRandomPassword();
+  await writeFile(PASSWORD_PATH, password);
 
-  const encryptedWallet = Crypto.getEncryptedWallet(state.privateKey, password);
-  await createKeyFile(encryptedWallet);
+  const encryptedWallet = await getEncryptedWallet(state.privateKey, password);
+  await writeFile(KEY_PATH, encryptedWallet);
 }
 
 
-async function getExtraData(docketTemplate) {
-  const dockerYaml = await jsyaml.load(docketTemplate);
+async function getExtraData(docketTemplate: string) {
+  const dockerYaml = await jsyaml.load(docketTemplate) as any;
   const parityVersion = dockerYaml.services.parity.image.split(':');
   return `Apollo ${parityVersion[1]}`;
 }
 
-async function createDockerComposeFile(dockerTemplateFile, address, networkName, domain) {
+async function createDockerComposeFile(dockerTemplateFile: string, address: string, networkName: string, domain: string) {
   const dockerFile = dockerTemplateFile
     .replace(/<ENTER_YOUR_ADDRESS_HERE>/gi, address)
     .replace(/<ENTER_NETWORK_NAME_HERE>/gi, networkName)
     .replace(/<ENTER_DOMAIN_HERE>/gi, domain);
 
-  await writeFile(path.join(OUTPUT_DIRECTORY, DOCKER_FILE_NAME), dockerFile);
+  await writeFile(DOCKER_COMPOSE_PATH, dockerFile);
 }
 
-async function createParityConfigFile(parityTemplateFile, address, ip, extraData) {
+async function createParityConfigFile(parityTemplateFile: string, address: string, ip: string, extraData: string) {
   const parityFile = parityTemplateFile
     .replace(/<TYPE_YOUR_ADDRESS_HERE>/gi, address)
     .replace(/<TYPE_YOUR_IP_HERE>/gi, ip)
     .replace(/<TYPE_EXTRA_DATA_HERE>/gi, extraData);
 
-  await writeFile(path.join(OUTPUT_DIRECTORY, PARITY_CONFIG_FILE_NAME), parityFile);
+  await writeFile(PARITY_CONFIG_PATH, parityFile);
 }
 
 
-async function createPasswordFile(password) {
-  await writeFile(path.join(OUTPUT_DIRECTORY, PASSWORD_FILE_NAME), password);
-}
+async function fetchChainJson(chainspecUrl: string) {
+  await fileDownload(chainspecUrl, CHAIN_DESCRIPTION_PATH);
 
-async function createKeyFile(encryptedWallet) {
-  const data = JSON.stringify(encryptedWallet, null, 2);
-  await writeFile(path.join(OUTPUT_DIRECTORY, KEY_FILE_NAME), data);
-}
-
-
-async function fetchChainJson(chainSpecUrl) {
-  const chainFilePath = path.join(OUTPUT_DIRECTORY, CHAIN_DESCRIPTION_FILE_NAME);
-  await fileDownload(chainSpecUrl, chainFilePath);
-
-  const parsedChainJson = JSON.parse(await readFile(chainFilePath, {encoding: 'utf-8'}));
+  const parsedChainJson = JSON.parse(await readFile(CHAIN_DESCRIPTION_PATH, {encoding: 'utf-8'}));
   return parsedChainJson.name;
 }
 
-async function readTemplates(networkName) {
-  const dockerTemplate = await readFile(path.join(TEMPLATE_DIRECTORY, APOLLO, networkName, DOCKER_FILE_NAME), {encoding: 'utf-8'});
-  const parityTemplate = await readFile(path.join(TEMPLATE_DIRECTORY, APOLLO, networkName, PARITY_CONFIG_FILE_NAME), {encoding: 'utf-8'});
+async function readTemplates(networkName: string) {
+  const dockerTemplate = await readFile(dockerFileTemplatePath(networkName), {encoding: 'utf-8'});
+  const parityTemplate = await readFile(parityConfigTemplatePath(networkName), {encoding: 'utf-8'});
 
   return {dockerTemplate, parityTemplate};
 }

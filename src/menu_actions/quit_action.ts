@@ -7,11 +7,8 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
 
-import {Network} from './network';
+async function quitAction() {
+  process.exit(0);
+}
 
-export default interface State {
-  network: Network;
-  privateKey: string;
-  ip: string;
-  explorerUrl: string;
-};
+export default quitAction;

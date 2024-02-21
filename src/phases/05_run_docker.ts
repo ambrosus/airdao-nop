@@ -7,13 +7,13 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
 */
 import Dialog from '../dialogs/dialog_model';
-import {runDocker} from '../utils/exec';
+import { dockerRestart, dockerUp } from '../utils/exec';
 
 
 export default async function runDockerPhase() {
   try {
     Dialog.dockerStartingDialog();
-    await runDocker();
+    await dockerRestart();
     Dialog.dockerStartedDialog();
   } catch (error) {
     Dialog.dockerErrorDialog();
