@@ -77,7 +77,7 @@ async function checkFork(providerLocal: ethers.providers.JsonRpcProvider, provid
 
 async function fixVersionIssue() {
   console.log('The NOP will be updated now and node will be restarted...\nYou can run NOP again after the update is complete.');
-  await execCmd('./update.sh', { cwd: '../../' });
+  await execCmd('./update.sh');
   process.exit(0);
 }
 
