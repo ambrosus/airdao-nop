@@ -93,5 +93,3 @@ If you are having docker issues [DigitalOcean has a indepth guide for installing
 ## Alternative community guide
 
 There also detailed alternative intructions made by our community: https://github.com/ambrosus/community-wiki/wiki/Installation-guides
-
-test
