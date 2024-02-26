@@ -15,7 +15,7 @@
     "update": "node dist/src/update.js"
   },
   "dependencies": {
-    "@airdao/airdao-node-contracts": "1.1.7",
+    "@airdao/airdao-node-contracts": "1.2.21",
     "@types/inquirer": "^9.0.4",
     "@types/js-yaml": "^4.0.9",
     "js-yaml": "^4.0.9",
