@@ -39,7 +39,7 @@ export default async function checkStatusInServerNodes(
     return;
   }
 
-  if (!apolloInfo) {
+  if (apolloInfo.apollo.stake.isZero()) {
     Dialog.notRegisteredDialog(explorerUrl);
     return;
   }
