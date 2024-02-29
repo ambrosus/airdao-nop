@@ -11,12 +11,10 @@ import messages from '../dialogs/messages';
 import {
   check,
   quitAction,
-  resetAction,
   sendLogsAction,
 } from '../menu_actions';
 
 export const ACTIONS = {
-  [messages.actions.reset]: resetAction,
   [messages.actions.logs]: sendLogsAction,
   [messages.actions.check]: check,
   [messages.actions.quit]: quitAction
