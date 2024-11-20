@@ -14,8 +14,13 @@ apt-get update -y
 apt-get install -y nodejs
 
 # Install required packages
+if [[ "$ubuntu_version" == "20.04" || "$ubuntu_version" < "20.04" ]]; then
+    apt-get install -y python-dev
+else
+    apt-get install -y python-dev-is-python3
+fi
+
 apt-get install -y \
-    python-dev \
     build-essential \
     npm \
     git \
