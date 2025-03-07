@@ -84,7 +84,7 @@ repeats at least for several minutes), run the following:
     cd ~/airdao-nop/output
     docker stop parity
     rm -rf chains
-    curl -s https://backup.ambrosus.io/blockchain.tgz | tar zxpf -
+    curl -s https://backup.airdao.io/blockchain.tgz | tar zxpf -
     docker start parity
 
 ### Useful docker-compose commands
