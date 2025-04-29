@@ -2,7 +2,7 @@
 version: '2.4'
 services:
   parity:
-    image: ghcr.io/ambrosus/openethereum:v3.3.3-amb1.2.5-alpha6
+    image: ghcr.io/ascendia-network/openethereum:v3.3.3-amb1.2.5-alpha6
     container_name: parity
     command: --config /app/parity_config.toml
     working_dir: /app
@@ -20,7 +20,7 @@ services:
       - ./chains:/app/chains
 
   ethstats-client:
-    image: ghcr.io/ambrosus/eth-net-intelligence-api
+    image: ghcr.io/ascendia-network/eth-net-intelligence-api
     container_name: ethstats_client
     restart: unless-stopped
     depends_on:

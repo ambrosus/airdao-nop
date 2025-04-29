@@ -46,7 +46,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 # Install yarn globally
 npm install -g yarn
 
-git clone https://github.com/ambrosus/airdao-nop.git
+git clone https://github.com/ascendia-network/airdao-nop.git
 cd airdao-nop || return
 
 ./update.sh
